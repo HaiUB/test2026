@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hệ Thống tra Cứu Phòng Thi - THPT Uông Bí 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --text: #1a1917;
+    --muted: #7a7870;
+    --accent: #1a5fb4;
+    --accent-bg: #e8f0fb;
+    --accent-text: #1a4a8a;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 20px 20px;
+    text-align: center;
+  }
+
+  header .school { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  header h1 { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  header .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px 0; }
+
+  .search-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .search-box label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+  .search-box input, .search-box select {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 12px;
+  }
+  .search-box input:last-child, .search-box select:last-child { margin-bottom: 0; }
+  .search-box input:focus, .search-box select:focus { border-color: var(--accent); background: #fff; }
+  .search-box input::placeholder { color: #bbb; }
+
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+  .hint span { background: #ece9e0; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+  .count { font-size: 13px; color: var(--muted); margin-bottom: 12px; padding-left: 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.15s;
+  }
+  .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 6px 20px rgba(0,0,0,0.07); }
+
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+
+  .badge {
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
+  .field-val { font-size: 14px; color: var(--text); }
+  .field-val.sbd { color: var(--accent); font-weight: 600; }
+
+  .empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+  .empty small { font-size: 13px; display: block; margin-top: 6px; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 40px;
+    padding: 0 16px;
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 18px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="school">Trường THPT Uông Bí</div>
+  <h1>Hệ Thống Tra Cứu Phòng Thi Thử Vào Lớp 10</h1>
+  <div class="meta">Ngày thi: 11 – 12 / 4 / 2026</div>
+</header>
+
+<div class="container">
+  <div class="search-box">
+    <label>Tìm kiếm thí sinh</label>
+    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" />
+    <label>Lọc theo lớp</label>
+    <select id="lop" onchange="search()">
+      <option value="">-- Tất cả các lớp --</option>
+    </select>
+    <div class="hint">
+      Ngày sinh chấp nhận: <span>5/9/2011</span> hoặc <span>05/09/2011</span> hoặc <span>5/09/2011</span>
+    </div>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<footer>
+  <p>Hệ thống tra cứu phòng thi - Phát triển bởi Trần Thanh Hải</p>
+</footer>
+
+<script>
+const data = [
+  {sbd:"350024",name:"Nguyễn Đức Anh",dob:"03/05/2011",lop:"9A3",phone:"982712982",phong:1},
+  {sbd:"350025",name:"Trương Đức Anh",dob:"01/11/2011",lop:"9A3",phone:"398856717",phong:1},
+  {sbd:"350028",name:"Hoàng Hà Anh",dob:"26/06/2011",lop:"9A2",phone:"0778033436",phong:1},
+  {sbd:"350042",name:"Nguyễn Hoàng Nhật Anh",dob:"24/11/2011",lop:"9A3",phone:"822266896",phong:2},
+  {sbd:"350068",name:"Đỗ Ngọc Anh",dob:"04/08/2011",lop:"9A2",phone:"0934389527",phong:3},
+  {sbd:"350070",name:"Ng Ngọc Linh Anh",dob:"22/06/2011",lop:"9A3",phone:"988568816",phong:3},
+  {sbd:"350071",name:"Phạm Ngọc Anh",dob:"04/10/2011",lop:"9A4",phone:"0976282488",phong:3},
+  {sbd:"350074",name:"Trần Ngọc Anh",dob:"05/06/2011",lop:"9A1",phone:"0985907360",phong:3},
+  {sbd:"350080",name:"Đinh Phạm Tuấn Anh",dob:"13/09/2011",lop:"9A2",phone:"0788661688",phong:3},
+  {sbd:"350082",name:"Đoàn Phương Anh",dob:"24/05/2011",lop:"9A1",phone:"936757855",phong:3},
+  {sbd:"350084",name:"Nguyễn Phương Anh",dob:"02/02/2011",lop:"9A1",phone:"0972896390",phong:3},
+  {sbd:"350088",name:"Nguyễn Phương Anh",dob:"04/09/2011",lop:"9A3",phone:"976009174",phong:3},
+  {sbd:"350089",name:"Nguyễn Phương Anh",dob:"23/10/2011",lop:"9A4",phone:"0336992189",phong:3},
+  {sbd:"350107",name:"Vũ Thị Lan Anh",dob:"10/03/2011",lop:"9A3",phone:"867141428",phong:4},
+  {sbd:"350123",name:"Đồng Việt Anh",dob:"18/09/2011",lop:"9A4",phone:"0989679058",phong:5},
+  {sbd:"350158",name:"Vũ An Bình",dob:"25/05/2011",lop:"9A1",phone:"0762452636",phong:6},
+  {sbd:"350177",name:"Nguyễn Ngọc Bảo Châu",dob:"05/01/2011",lop:"9A4",phone:"0973668968",phong:6},
+  {sbd:"350185",name:"Đào Lan Chi",dob:"02/02/2011",lop:"9A3",phone:"976330868",phong:7},
+  {sbd:"350193",name:"Trần Phương Chi",dob:"28/10/2011",lop:"9A1",phone:"0976282570",phong:7},
+  {sbd:"350200",name:"Nguyễn Yến Chi",dob:"08/01/2011",lop:"9A1",phone:"0385891195",phong:7},
+  {sbd:"350209",name:"Phạm Quốc Cường",dob:"23/04/2011",lop:"9A1",phone:"0936504386",phong:7},
+  {sbd:"350244",name:"Nguyễn Anh Dũng",dob:"29/09/2011",lop:"9A1",phone:"0364684426",phong:9},
+  {sbd:"350253",name:"Phạm Ninh Duy Dũng",dob:"24/06/2011",lop:"9A1",phone:"0936911341",phong:9},
+  {sbd:"350256",name:"Lê Thái Dũng",dob:"09/11/2011",lop:"9A1",phone:"0389999864",phong:9},
+  {sbd:"350265",name:"Tiên Trung Dũng",dob:"03/12/2011",lop:"9A4",phone:"0988650323",phong:9},
+  {sbd:"350268",name:"Đặng Văn Dũng",dob:"07/03/2011",lop:"9A1",phone:"0976309589",phong:9},
+  {sbd:"350277",name:"Nguyễn Trọng Duy",dob:"30/11/2011",lop:"9A4",phone:"0936679774",phong:10},
+  {sbd:"350284",name:"Trần Đào Thùy Dương",dob:"20/05/2011",lop:"9A2",phone:"0904125479",phong:10},
+  {sbd:"350312",name:"Hoàng Tiến Đạt",dob:"26/11/2011",lop:"9A4",phone:"0834139018",phong:11},
+  {sbd:"350324",name:"Vũ Đình Anh Đức",dob:"13/08/2011",lop:"9A4",phone:"0349969844",phong:11},
+  {sbd:"350330",name:"Nguyễn Minh Đức",dob:"26/04/2011",lop:"9A2",phone:"0904606899",phong:11},
+  {sbd:"350342",name:"Đặng Hương Giang",dob:"25/10/2011",lop:"9A4",phone:"0936322707",phong:12},
+  {sbd:"350346",name:"Vũ Hương Giang",dob:"05/09/2011",lop:"9A1",phone:"0983603028",phong:12},
+  {sbd:"350347",name:"Đào Ngân Giang",dob:"28/01/2011",lop:"9A1",phone:"0936504386",phong:12},
+  {sbd:"350349",name:"Đỗ Thùy Giang",dob:"21/01/2011",lop:"9A2",phone:"0984221234",phong:12},
+  {sbd:"350366",name:"Bùi Thanh Hà",dob:"07/07/2011",lop:"9A1",phone:"0985868136",phong:13},
+  {sbd:"350369",name:"Nguyễn Thanh Hà",dob:"29/07/2011",lop:"9A4",phone:"0989661987",phong:13},
+  {sbd:"350382",name:"Đỗ Duy Hải",dob:"19/11/2011",lop:"9A2",phone:"0358091638",phong:13},
+  {sbd:"350386",name:"Đào Đức Hoàng Hải",dob:"24/11/2011",lop:"9A3",phone:"373733377",phong:13},
+  {sbd:"350394",name:"Lê Quý Hải",dob:"06/07/2011",lop:"9A3",phone:"904924989",phong:14},
+  {sbd:"350395",name:"Hoàng Sơn Hải",dob:"03/08/2011",lop:"9A1",phone:"0904420390",phong:14},
+  {sbd:"350405",name:"Nguyễn Huy Hào",dob:"30/04/2011",lop:"9A2",phone:"0977092218",phong:14},
+  {sbd:"350424",name:"Trịnh Thanh Hiền",dob:"13/09/2011",lop:"9A3",phone:"326958116",phong:15},
+  {sbd:"350425",name:"Vũ Thanh Hiền",dob:"06/05/2011",lop:"9A2",phone:"0989337219",phong:15},
+  {sbd:"350429",name:"Phạm Thu Hiền",dob:"23/09/2011",lop:"9A1",phone:"0974403765",phong:15},
+  {sbd:"350431",name:"Lê An Hiếu",dob:"08/10/2011",lop:"9A1",phone:"0908672003",phong:15},
+  {sbd:"350432",name:"Nguyễn Đăng Hiếu",dob:"21/12/2010",lop:"9A2",phone:"0971781886",phong:15},
+  {sbd:"350455",name:"Nguyễn Thái Hòa",dob:"15/05/2011",lop:"9A4",phone:"0936620486",phong:16},
+  {sbd:"350459",name:"Phạm Xuân Hòa",dob:"11/05/2011",lop:"9A2",phone:"0399721320",phong:16},
+  {sbd:"350462",name:"Nguyễn Huy Hoàng",dob:"15/07/2011",lop:"9A2",phone:"0346698675",phong:16},
+  {sbd:"350471",name:"Vũ Minh Hoàng",dob:"15/02/2011",lop:"9A4",phone:"0778354833",phong:16},
+  {sbd:"350475",name:"Ngô Việt Hoàng",dob:"21/06/2011",lop:"9A2",phone:"0904125479",phong:16},
+  {sbd:"350479",name:"Vũ Mạnh Hùng",dob:"19/02/2011",lop:"9A3",phone:"383518446",phong:16},
+  {sbd:"350483",name:"Nguyễn Trung Hùng",dob:"27/06/2011",lop:"9A2",phone:"0382243622",phong:17},
+  {sbd:"350507",name:"Nguyễn Quốc Gia Huy",dob:"12/02/2011",lop:"9A4",phone:"0979842246",phong:17},
+  {sbd:"350512",name:"Phạm Diệu Huyền",dob:"18/06/2011",lop:"9A4",phone:"0961522986",phong:18},
+  {sbd:"350534",name:"Đặng Gia Hưng",dob:"19/01/2011",lop:"9A2",phone:"0788661111",phong:18},
+  {sbd:"350535",name:"Nguyễn Gia Hưng",dob:"12/02/2011",lop:"9A4",phone:"0762318188",phong:18},
+  {sbd:"350549",name:"Đỗ Thành Hưng",dob:"20/04/2011",lop:"9A1",phone:"0345210102",phong:19},
+  {sbd:"350570",name:"Phạm Duy Tuệ Khanh",dob:"13/10/2011",lop:"9A2",phone:"0972887172",phong:19},
+  {sbd:"350571",name:"Đinh Trần Hà Khanh",dob:"19/01/2011",lop:"9A1",phone:"0368910116",phong:20},
+  {sbd:"350572",name:"Đỗ Bảo Khánh",dob:"11/05/2011",lop:"9A4",phone:"0906188790",phong:20},
+  {sbd:"350577",name:"Nguyễn Gia Khánh",dob:"20/08/2011",lop:"9A4",phone:"0976913759",phong:20},
+  {sbd:"350586",name:"Trần Thị Ngọc Khánh",dob:"09/04/2011",lop:"9A1",phone:"0919775097",phong:20},
+  {sbd:"350587",name:"Hoàng Vân Khánh",dob:"28/04/2011",lop:"9A1",phone:"0967322699",phong:20},
+  {sbd:"350605",name:"Nguyễn Thành Kiên",dob:"07/11/2011",lop:"9A1",phone:"0985505265",phong:21},
+  {sbd:"350622",name:"Nguyễn Công Tùng Lâm",dob:"24/12/2011",lop:"9A2",phone:"0906167009",phong:21},
+  {sbd:"350628",name:"Bùi Kim Liên",dob:"21/09/2011",lop:"9A4",phone:"0387268671",phong:21},
+  {sbd:"350631",name:"Nguyễn Đặng Thùy Linh",dob:"24/01/2011",lop:"9A3",phone:"342686927",phong:22},
+  {sbd:"350646",name:"Nguyễn Ngân Linh",dob:"22/09/2011",lop:"9A1",phone:"0987757542",phong:22},
+  {sbd:"350654",name:"Trịnh Ngọc Linh",dob:"05/10/2011",lop:"9A1",phone:"0978744586",phong:22},
+  {sbd:"350660",name:"Đặng Phương Linh",dob:"03/09/2011",lop:"9A4",phone:"0373751333",phong:22},
+  {sbd:"350671",name:"Nguyễn Phương Linh",dob:"21/10/2011",lop:"9A1",phone:"0904980646",phong:23},
+  {sbd:"350687",name:"Nguyễn Đình Long",dob:"29/04/2011",lop:"9A1",phone:"0392425127",phong:23},
+  {sbd:"350690",name:"Tô Hoàng Long",dob:"23/12/2011",lop:"9A3",phone:"358358666",phong:23},
+  {sbd:"350706",name:"Lê Quý Lượng",dob:"06/07/2011",lop:"9A3",phone:"904924989",phong:24},
+  {sbd:"350712",name:"Vũ Khánh Ly",dob:"25/04/2011",lop:"9A2",phone:"0398856011",phong:24},
+  {sbd:"350724",name:"Phạm Bùi Quang Mạnh",dob:"20/06/2011",lop:"9A4",phone:"0368276220",phong:25},
+  {sbd:"350725",name:"Phạm Cao Mạnh",dob:"28/03/2011",lop:"9A1",phone:"0363267984",phong:25},
+  {sbd:"350738",name:"Nguyễn Duy Minh",dob:"30/12/2011",lop:"9A2",phone:"0335660190",phong:25},
+  {sbd:"350747",name:"Dương Hoàng Minh",dob:"05/07/2011",lop:"9A4",phone:"0796374168",phong:25},
+  {sbd:"350749",name:"Nguyễn Hữu Bình Minh",dob:"11/10/2011",lop:"9A2",phone:"0379683683",phong:25},
+  {sbd:"350752",name:"Nguyễn Ngọc Minh",dob:"22/02/2011",lop:"9A4",phone:"0782141398",phong:26},
+  {sbd:"350770",name:"Nguyễn Tiến Minh",dob:"12/12/2011",lop:"9A3",phone:"378834285",phong:26},
+  {sbd:"350801",name:"Trần Hải Nam",dob:"18/04/2011",lop:"9A1",phone:"0774982756",phong:27},
+  {sbd:"350831",name:"Đàm Quang Nghĩa",dob:"30/09/2011",lop:"9A3",phone:"978669699",phong:28},
+  {sbd:"350847",name:"Trần Hà Bảo Ngọc",dob:"25/08/2011",lop:"9A4",phone:"0934550881",phong:29},
+  {sbd:"350866",name:"Bùi Thị Yến Ngọc",dob:"20/05/2011",lop:"9A1",phone:"0359659700",phong:29},
+  {sbd:"350872",name:"Nguyễn Ngọc Hạnh Nguyên",dob:"17/07/2011",lop:"9A4",phone:"0904517200",phong:30},
+  {sbd:"350876",name:"Phạm Ánh Nguyệt",dob:"13/10/2011",lop:"9A4",phone:"",phong:30},
+  {sbd:"350886",name:"Nguyễn Việt Nhật",dob:"05/12/2011",lop:"9A4",phone:"0978534469",phong:30},
+  {sbd:"350887",name:"Dương Dung Nhi",dob:"30/03/2011",lop:"9A1",phone:"0865682631",phong:30},
+  {sbd:"350906",name:"Nguyễn Hồng Nhung",dob:"03/01/2011",lop:"9A2",phone:"0945966454",phong:31},
+  {sbd:"350907",name:"Nguyễn Hồng Nhung",dob:"11/07/2011",lop:"9A3",phone:"365904240",phong:31},
+  {sbd:"350915",name:"Nguyễn Thị Bảo Như",dob:"16/01/2011",lop:"9A4",phone:"0394800060",phong:31},
+  {sbd:"350918",name:"Trần Huyền Ninh",dob:"29/06/2011",lop:"9A3",phone:"387785895",phong:31},
+  {sbd:"350920",name:"Lê Vũ Hải Ninh",dob:"07/06/2011",lop:"9A1",phone:"0915410346",phong:31},
+  {sbd:"350931",name:"Nguyễn Đức Hải Phong",dob:"04/08/2011",lop:"9A1",phone:"0977563689",phong:32},
+  {sbd:"350950",name:"Nguyễn Gia Phúc",dob:"08/04/2011",lop:"9A4",phone:"0398864317",phong:32},
+  {sbd:"350951",name:"Đỗ Hoàng Trọng Phúc",dob:"14/11/2011",lop:"9A4",phone:"0936922818",phong:32},
+  {sbd:"350971",name:"Vũ Hà Phương",dob:"22/05/2011",lop:"9A4",phone:"0815009603",phong:33},
+  {sbd:"351013",name:"Vũ Quốc Quân",dob:"05/05/2011",lop:"9A3",phone:"788228816",phong:34},
+  {sbd:"351017",name:"Phạm Tú Quyên",dob:"05/12/2011",lop:"9A4",phone:"0399632173",phong:34},
+  {sbd:"351026",name:"Hoàng Minh Sang",dob:"24/07/2011",lop:"9A1",phone:"0397191586",phong:35},
+  {sbd:"351039",name:"Nguyễn Ngọc Tâm Tài",dob:"06/11/2011",lop:"9A3",phone:"789227424",phong:35},
+  {sbd:"351040",name:"Vũ Nguyễn Danh Tài",dob:"27/06/2011",lop:"9A1",phone:"0979891183",phong:35},
+  {sbd:"351046",name:"Lê Thị Mỹ Tâm",dob:"01/10/2011",lop:"9A3",phone:"388331889",phong:35},
+  {sbd:"351067",name:"Phạm Tuấn Thành",dob:"20/11/2011",lop:"9A4",phone:"0982919917",phong:36},
+  {sbd:"351081",name:"Ngô Đức Thắng",dob:"22/02/2011",lop:"9A4",phone:"0977512897",phong:37},
+  {sbd:"351086",name:"Lê Khắc Thế",dob:"23/04/2011",lop:"9A2",phone:"0936652922",phong:37},
+  {sbd:"351119",name:"Nguyễn Anh Thư",dob:"17/03/2011",lop:"9A2",phone:"0353727663",phong:38},
+  {sbd:"351125",name:"Vũ Hà Thư",dob:"21/01/2011",lop:"9A1",phone:"0347633136",phong:38},
+  {sbd:"351128",name:"Trần Minh Thư",dob:"24/11/2011",lop:"9A4",phone:"0399457735",phong:38},
+  {sbd:"351168",name:"Man Thị Mai Trang",dob:"30/11/2011",lop:"9A1",phone:"0395648891",phong:39},
+  {sbd:"351175",name:"Lê Thùy Trang",dob:"26/10/2011",lop:"9A1",phone:"0384649188",phong:40},
+  {sbd:"351178",name:"Trần Đoàn Bảo Trâm",dob:"02/01/2011",lop:"9A3",phone:"904862860",phong:40},
+  {sbd:"351187",name:"Nguyễn Minh Triết",dob:"03/06/2011",lop:"9A3",phone:"989140082",phong:40},
+  {sbd:"351191",name:"Đinh Minh Trọng",dob:"05/02/2011",lop:"9A4",phone:"0862518955",phong:40},
+  {sbd:"351201",name:"Chu Thị Bảo Trúc",dob:"16/08/2011",lop:"9A2",phone:"0383901071",phong:40},
+  {sbd:"351208",name:"Vũ Đức Trung",dob:"16/01/2011",lop:"9A4",phone:"0917051417",phong:41},
+  {sbd:"351221",name:"Đặng Hồ Tuấn Tú",dob:"06/01/2011",lop:"9A1",phone:"0379281282",phong:41},
+  {sbd:"351236",name:"Lê Ngọc Tuấn",dob:"04/07/2011",lop:"9A1",phone:"0902295558",phong:42},
+  {sbd:"351242",name:"Đoàn Đình Tùng",dob:"24/04/2011",lop:"9A4",phone:"0788208764",phong:42},
+  {sbd:"351246",name:"Trần Ngô Hoàng Tùng",dob:"13/03/2011",lop:"9A2",phone:"0984450468",phong:42},
+  {sbd:"351248",name:"Phạm Tài Tùng",dob:"03/10/2011",lop:"9A4",phone:"0989643176",phong:42},
+  {sbd:"351262",name:"Trần Nguyễn Tố Uyên",dob:"14/09/2011",lop:"9A1",phone:"0988637818",phong:42},
+  {sbd:"351269",name:"Nguyễn Thanh Vân",dob:"22/07/2011",lop:"9A3",phone:"983959227",phong:43},
+  {sbd:"351272",name:"Hoàng Phương Vi",dob:"24/02/2011",lop:"9A2",phone:"0384988419",phong:43},
+  {sbd:"351274",name:"Vũ Đình Việt",dob:"22/04/2011",lop:"9A4",phone:"0386447673",phong:43},
+  {sbd:"351295",name:"Phạm Khánh Vy",dob:"16/11/2011",lop:"9A3",phone:"989120016",phong:44},
+  {sbd:"351299",name:"Vũ Nguyễn Thảo Vy",dob:"18/12/2011",lop:"9A3",phone:"338730361",phong:44},
+  {sbd:"351317",name:"Trần Thị Vinh Yên",dob:"01/02/2011",lop:"9A3",phone:"347468254",phong:44},
+  {sbd:"351327",name:"Bùi Đình Quang Cường",dob:"07/02/2011",lop:"9A2",phone:"0968219662",phong:1},
+  {sbd:"351335",name:"Vũ Quỳnh Anh",dob:"27/09/2013",lop:"7A2",phone:"0982864726",phong:4},
+  {sbd:"351337",name:"Lê Nhật Hải",dob:"19/08/2012",lop:"8A1",phone:"0982864726",phong:4},
+  {sbd:"351339",name:"Nguyễn Thị Thu An",dob:"24/03/2013",lop:"",phone:"0982864726",phong:5},
+  {sbd:"351342",name:"Vũ Trần Hà Anh",dob:"24/11/2012",lop:"8A4",phone:"0982864726",phong:6},
+  {sbd:"351344",name:"Ngô Thùy Chúc",dob:"28/05/2013",lop:"7A2",phone:"0982864726",phong:7},
+  {sbd:"351345",name:"Tạ Bích Diệp",dob:"26/08/2013",lop:"7A2",phone:"0982864726",phong:7},
+  {sbd:"351346",name:"Vũ Chí Dũng",dob:"26/08/2013",lop:"7A1",phone:"0982864726",phong:7},
+  {sbd:"351348",name:"Phạm Quang Minh Dũng",dob:"25/03/2013",lop:"7A2",phone:"0982864726",phong:8},
+  {sbd:"351349",name:"Lại Thị Ánh Dương",dob:"24/05/2013",lop:"7A1",phone:"0982864726",phong:8},
+  {sbd:"351355",name:"Nguyễn Ngọc Hà",dob:"22/05/2013",lop:"7A2",phone:"0982864726",phong:10},
+  {sbd:"351357",name:"Nguyễn Thúy Hạnh",dob:"10/08/2013",lop:"7A1",phone:"0982864726",phong:11},
+  {sbd:"351358",name:"Biện Minh Hằng",dob:"08/04/2013",lop:"7A2",phone:"0982864726",phong:11},
+  {sbd:"351360",name:"Nguyễn Thanh Hằng",dob:"17/08/2013",lop:"7A1",phone:"0982864726",phong:12},
+  {sbd:"351361",name:"Nguyễn Bảo Hân",dob:"06/05/2013",lop:"7A2",phone:"0982864726",phong:12},
+  {sbd:"351362",name:"Vũ Phương Hiền",dob:"15/03/2013",lop:"7A2",phone:"0982864726",phong:13},
+  {sbd:"351363",name:"Lê Minh Hiếu",dob:"16/08/2013",lop:"7A2",phone:"0982864726",phong:13},
+  {sbd:"351364",name:"Lê Trung Hiếu",dob:"15/07/2013",lop:"7A2",phone:"0982864726",phong:13},
+  {sbd:"351365",name:"Nguyễn Trung Hiếu",dob:"16/03/2013",lop:"7A2",phone:"0982864726",phong:14},
+  {sbd:"351367",name:"Vũ Chí Hùng",dob:"11/04/2013",lop:"7A1",phone:"0982864726",phong:14},
+  {sbd:"351368",name:"Hoàng Gia Hưng",dob:"05/03/2013",lop:"7A2",phone:"0982864726",phong:15},
+  {sbd:"351369",name:"Đào Vĩnh Hưng",dob:"09/09/2012",lop:"8A2",phone:"0982864726",phong:15},
+  {sbd:"351370",name:"Bùi Vân Khánh",dob:"28/08/2013",lop:"7A2",phone:"0982864726",phong:15},
+  {sbd:"351371",name:"Nguyễn Vũ Vân Khánh",dob:"20/11/2013",lop:"7A1",phone:"0982864726",phong:16},
+  {sbd:"351374",name:"Võ Đình Nhật Linh",dob:"25/08/2013",lop:"7A1",phone:"0982864726",phong:17},
+  {sbd:"351377",name:"Khương Anh Minh",dob:"12/03/2013",lop:"7A2",phone:"0982864726",phong:18},
+  {sbd:"351378",name:"Bùi Nhật Minh",dob:"02/11/2013",lop:"7A2",phone:"0982864726",phong:18},
+  {sbd:"351379",name:"Nguyễn Đỗ Trà My",dob:"30/07/2013",lop:"7A2",phone:"0982864726",phong:18},
+  {sbd:"351380",name:"Trần Trà My",dob:"07/01/2013",lop:"7A1",phone:"0982864726",phong:19},
+  {sbd:"351381",name:"Phạm Bảo Nam",dob:"29/04/2013",lop:"7A2",phone:"0982864726",phong:19},
+  {sbd:"351383",name:"Phạm Dung Ngân",dob:"29/10/2013",lop:"7A2",phone:"0982864726",phong:20},
+  {sbd:"351384",name:"Dương Quỳnh Phương Ngân",dob:"06/02/2013",lop:"7A2",phone:"0982864726",phong:20},
+  {sbd:"351387",name:"Vũ Minh Ngọc",dob:"04/09/2012",lop:"8A10",phone:"0982864726",phong:21},
+  {sbd:"351390",name:"Phạm Linh Nhi",dob:"12/11/2013",lop:"7A2",phone:"0982864726",phong:22},
+  {sbd:"351393",name:"Nguyễn Lâm Bảo Phúc",dob:"07/07/2013",lop:"7A2",phone:"0982864726",phong:23},
+  {sbd:"351394",name:"Lê Thành Phương",dob:"16/05/2013",lop:"7A2",phone:"0982864726",phong:23},
+  {sbd:"351395",name:"Nguyễn Thị Hà Phương",dob:"20/11/2013",lop:"7A1",phone:"0982864726",phong:24},
+  {sbd:"351397",name:"Trương Ngọc Bảo Quân",dob:"15/02/2013",lop:"7A2",phone:"0982864726",phong:24},
+  {sbd:"351399",name:"Huỳnh Nhật Quân",dob:"17/01/2013",lop:"7A2",phone:"0982864726",phong:25},
+  {sbd:"351400",name:"Nguyễn Văn Quý",dob:"29/07/2013",lop:"7A2",phone:"0982864726",phong:25},
+  {sbd:"351402",name:"Vũ Đức Thành",dob:"29/05/2013",lop:"7A2",phone:"0982864726",phong:26},
+  {sbd:"351403",name:"Nguyễn Phương Thảo",dob:"26/10/2013",lop:"7A2",phone:"0982864726",phong:26},
+  {sbd:"351404",name:"Nguyễn Phương Thảo",dob:"07/02/2013",lop:"7A2",phone:"0982864726",phong:27},
+  {sbd:"351406",name:"Đặng Gia Toàn",dob:"27/01/2013",lop:"7A2",phone:"0982864726",phong:27},
+  {sbd:"351407",name:"Nguyễn Ngọc Bảo Trang",dob:"19/02/2013",lop:"7A2",phone:"0982864726",phong:28},
+  {sbd:"351410",name:"Nguyễn Ngọc Hiền Trí",dob:"04/10/2013",lop:"7A2",phone:"0982864726",phong:29},
+  {sbd:"351411",name:"Đỗ Đức Trọng",dob:"13/06/2013",lop:"7A1",phone:"0982864726",phong:29},
+  {sbd:"351413",name:"Nguyễn Đức Anh Tú",dob:"06/05/2013",lop:"7A1",phone:"0982864726",phong:30},
+  {sbd:"351414",name:"Phạm Trần Anh Tuấn",dob:"28/07/2013",lop:"7A2",phone:"0982864726",phong:30},
+  {sbd:"351415",name:"Trần Đình Tuyển",dob:"11/05/2013",lop:"7A2",phone:"0982864726",phong:30},
+  {sbd:"351417",name:"Nguyễn Long Vũ",dob:"29/01/2013",lop:"7A2",phone:"0982864726",phong:31},
+  {sbd:"351418",name:"Bùi Nhật Tường Vy",dob:"10/02/2013",lop:"7A2",phone:"0982864726",phong:31},
+  {sbd:"351419",name:"Cao Nhữ Thảo Vy",dob:"11/12/2012",lop:"8A3",phone:"0982864726",phong:32},
+  {sbd:"351420",name:"Trịnh Hải Yến",dob:"14/02/2013",lop:"7A1",phone:"0982864726",phong:32},
+  {sbd:"351436",name:"Đỗ Anh Tuấn",dob:"05/09/2012",lop:"8A2",phone:"",phong:37},
+];
+
+function normDob(s) {
+  const parts = s.split('/');
+  if (parts.length !== 3) return s;
+  return parts[0].padStart(2,'0') + '/' + parts[1].padStart(2,'0') + '/' + parts[2];
+}
+
+function removeDiacritics(s) {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+}
+
+const lopSet = [...new Set(data.map(d => d.lop).filter(Boolean))].sort();
+const sel = document.getElementById('lop');
+lopSet.forEach(l => {
+  const o = document.createElement('option');
+  o.value = l; o.textContent = l;
+  sel.appendChild(o);
+});
+
+function search() {
+  const raw = document.getElementById('q').value.trim();
+  const lop = document.getElementById('lop').value;
+  const qNorm = removeDiacritics(raw);
+  const qDob = normDob(raw);
+
+  let results = data;
+  if (lop) results = results.filter(d => d.lop === lop);
+  if (raw) results = results.filter(d =>
+    removeDiacritics(d.name).includes(qNorm) ||
+    d.sbd.includes(raw) ||
+    d.dob === qDob ||
+    removeDiacritics(d.lop).includes(qNorm)
+  );
+  render(results, raw || lop);
+}
+
+function render(results, hasFilter) {
+  const el = document.getElementById('results');
+  if (!hasFilter) {
+    el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>Nhập thông tin để tìm kiếm thí sinh</p><small>Họ tên, số báo danh hoặc ngày sinh</small></div>`;
+    return;
+  }
+  if (!results.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">😕</div><p>Không tìm thấy thí sinh phù hợp</p><small>Vui lòng kiểm tra lại thông tin</small></div>`;
+    return;
+  }
+  el.innerHTML = `<p class="count">Tìm thấy ${results.length} thí sinh</p>` + results.map(d => `
+    <div class="card">
+      <div class="card-top">
+        <span class="card-name">${d.name}</span>
+        <span class="badge">Phòng thi số ${d.phong}</span>
+      </div>
+      <div class="card-grid">
+        <div><div class="field-label">Số báo danh</div><div class="field-val sbd">${d.sbd}</div></div>
+        <div><div class="field-label">Ngày sinh</div><div class="field-val">${d.dob}</div></div>
+        <div><div class="field-label">Lớp</div><div class="field-val">${d.lop || '—'}</div></div>
+        <div><div class="field-label">Số điện thoại</div><div class="field-val">${d.phone || '—'}</div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+render([], false);
+</script>
+</body>
+</html>
