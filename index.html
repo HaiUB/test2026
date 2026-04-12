@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hệ Thống tra Cứu Phòng Thi - THPT Uông Bí 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -128,12 +129,22 @@
     border-top: 1px solid var(--border);
   }
 
+  .scores-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+
   .full-width { grid-column: 1 / -1; }
 
   .field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
   .field-val { font-size: 14px; color: var(--text); }
   .field-val.sbd { color: var(--accent); font-weight: 600; }
   .field-val.school { color: red; font-weight: 600; }
+  .field-val.score { color: #d946ef; font-weight: 600; }
 
   .empty {
     text-align: center;
@@ -181,16 +192,23 @@
 <div class="container">
   <div class="search-box">
     <label>Lựa chọn trường</label>
-    <select id="truong" onchange="search()"></select>
+    <select id="truong" onchange="search()">
+        <option value="">Đang tải dữ liệu...</option>
+    </select>
 
     <label>Tìm kiếm thí sinh</label>
-    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" />
+    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" disabled />
     <div class="hint">
       Ngày sinh chấp nhận: <span>5/9/2011</span> hoặc <span>05/09/2011</span> hoặc <span>5/09/2011</span>
     </div>
   </div>
 
-  <div id="results"></div>
+  <div id="results">
+      <div class="empty">
+          <div class="icon">⏳</div>
+          <p>Đang đọc dữ liệu từ file Excel...</p>
+      </div>
+  </div>
 </div>
 
 <footer>
@@ -198,122 +216,96 @@
 </footer>
 
 <script>
-const data = [
-  // --- THCS BẮC SƠN (67 thí sinh) ---
-  {sbd:"350010",name:"Nguyễn Thái An",dob:"01/12/2010",lop:"9A",phone:"0916505150",phong:1,truong:"Bắc Sơn"},
-  {sbd:"350052",name:"Lê Mai Đức Anh",dob:"20/07/2011",lop:"9A",phone:"0916505150",phong:2,truong:"Bắc Sơn"},
-  {sbd:"350091",name:"Phạm Phương Anh",dob:"01/11/2011",lop:"9A",phone:"0916505150",phong:4,truong:"Bắc Sơn"},
-  {sbd:"350128",name:"Trần Ngọc Ánh",dob:"01/06/2011",lop:"9B",phone:"0916505150",phong:5,truong:"Bắc Sơn"},
-  {sbd:"350140",name:"Hà Gia Bảo",dob:"19/08/2011",lop:"9B",phone:"0916505150",phong:5,truong:"Bắc Sơn"},
-  {sbd:"350174",name:"Vũ Lê Bảo Châu",dob:"09/12/2011",lop:"9A",phone:"0916505150",phong:6,truong:"Bắc Sơn"},
-  {sbd:"350214",name:"Nguyễn Hoàng Danh",dob:"26/05/2011",lop:"9B",phone:"0916505150",phong:8,truong:"Bắc Sơn"},
-  {sbd:"350239",name:"Nguyễn Phương Dung",dob:"18/08/2011",lop:"9A",phone:"0916505150",phong:8,truong:"Bắc Sơn"},
-  {sbd:"350243",name:"Trần Phương Dung",dob:"24/04/2011",lop:"9A",phone:"0916505150",phong:9,truong:"Bắc Sơn"},
-  {sbd:"350254",name:"Trần Quang Dũng",dob:"23/03/2011",lop:"9A",phone:"0916505150",phong:9,truong:"Bắc Sơn"},
-  {sbd:"350267",name:"Nguyễn Tuấn Dũng",dob:"13/06/2011",lop:"9A",phone:"0916505150",phong:9,truong:"Bắc Sơn"},
-  {sbd:"350282",name:"Ngô Anh Dương",dob:"06/11/2011",lop:"9B",phone:"0916505150",phong:10,truong:"Bắc Sơn"},
-  {sbd:"350299",name:"Hoàng Trọng Đại",dob:"08/03/2011",lop:"9A",phone:"0916505150",phong:10,truong:"Bắc Sơn"},
-  {sbd:"350305",name:"Trần Quốc Đạt",dob:"16/03/2011",lop:"9A",phone:"0916505150",phong:11,truong:"Bắc Sơn"},
-  {sbd:"350311",name:"Đỗ Tiến Đạt",dob:"02/07/2011",lop:"9A",phone:"0916505151",phong:11,truong:"Bắc Sơn"},
-  {sbd:"350322",name:"Phan Anh Đức",dob:"11/07/2011",lop:"9B",phone:"0916505150",phong:11,truong:"Bắc Sơn"},
-  {sbd:"350336",name:"Chu Văn Đức",dob:"05/04/2011",lop:"9A",phone:"0916505150",phong:12,truong:"Bắc Sơn"},
-  {sbd:"350350",name:"Nguyễn Trường Giang",dob:"07/06/2011",lop:"9A",phone:"0916505150",phong:12,truong:"Bắc Sơn"},
-  {sbd:"350368",name:"Nguyễn Thanh Hà",dob:"08/05/2011",lop:"9B",phone:"0916505150",phong:13,truong:"Bắc Sơn"},
-  {sbd:"350396",name:"Cao Thanh Hải",dob:"20/12/2011",lop:"9B",phone:"0916505150",phong:14,truong:"Bắc Sơn"},
-  {sbd:"350440",name:"Nguyễn Trí Đình Hiếu",dob:"21/12/2011",lop:"9A",phone:"0916505150",phong:15,truong:"Bắc Sơn"},
-  {sbd:"350453",name:"Lê Minh Hòa",dob:"01/07/2011",lop:"9B",phone:"0916505150",phong:16,truong:"Bắc Sơn"},
-  {sbd:"350454",name:"Phạm Tâm Hòa",dob:"16/01/2011",lop:"9A",phone:"0916505150",phong:16,truong:"Bắc Sơn"},
-  {sbd:"350466",name:"Nguyễn Huy Hoàng",dob:"26/08/2011",lop:"9A",phone:"0916505150",phong:16,truong:"Bắc Sơn"},
-  {sbd:"350469",name:"Đỗ Minh Hoàng",dob:"22/05/2011",lop:"9B",phone:"0916505150",phong:16,truong:"Bắc Sơn"},
-  {sbd:"350501",name:"Phạm Minh Huy",dob:"23/08/2011",lop:"9A",phone:"0916505150",phong:17,truong:"Bắc Sơn"},
-  {sbd:"350504",name:"Đỗ Quang Huy",dob:"22/05/2011",lop:"9B",phone:"0916505150",phong:17,truong:"Bắc Sơn"},
-  {sbd:"350532",name:"Vũ Đình Hưng",dob:"31/07/2011",lop:"9A",phone:"0916505150",phong:18,truong:"Bắc Sơn"},
-  {sbd:"350552",name:"Ngô Việt Hưng",dob:"03/01/2011",lop:"9A",phone:"0916505150",phong:19,truong:"Bắc Sơn"},
-  {sbd:"350554",name:"Nguyễn Lan Hương",dob:"24/06/2011",lop:"9A",phone:"0916505150",phong:19,truong:"Bắc Sơn"},
-  {sbd:"350558",name:"Cao Quỳnh Hương",dob:"21/05/2011",lop:"9B",phone:"0916505150",phong:19,truong:"Bắc Sơn"},
-  {sbd:"350562",name:"Trần Thị Mai Hương",dob:"30/11/2011",lop:"9A",phone:"0916505150",phong:19,truong:"Bắc Sơn"},
-  {sbd:"350598",name:"Phạm Minh Khôi",dob:"18/04/2011",lop:"9A",phone:"0916505150",phong:20,truong:"Bắc Sơn"},
-  {sbd:"350625",name:"Nguyễn Tùng Lâm",dob:"08/07/2011",lop:"9B",phone:"0916505150",phong:21,truong:"Bắc Sơn"},
-  {sbd:"350665",name:"Hoàng Phương Linh",dob:"30/12/2011",lop:"9A",phone:"0916505150",phong:23,truong:"Bắc Sơn"},
-  {sbd:"350672",name:"Nguyễn Phương Linh",dob:"30/01/2011",lop:"9B",phone:"0916505150",phong:23,truong:"Bắc Sơn"},
-  {sbd:"350681",name:"Doãn Vũ Phương Linh",dob:"05/08/2011",lop:"9A",phone:"0916505150",phong:23,truong:"Bắc Sơn"},
-  {sbd:"350722",name:"Vũ Thị Tuyết Mai",dob:"25/04/2011",lop:"9A",phone:"0916505150",phong:25,truong:"Bắc Sơn"},
-  {sbd:"350784",name:"Bùi Thị Trà My",dob:"06/11/2011",lop:"9B",phone:"0916505150",phong:27,truong:"Bắc Sơn"},
-  {sbd:"350880",name:"Nguyễn Thị Minh Nguyệt",dob:"27/12/2011",lop:"9B",phone:"0916505150",phong:30,truong:"Bắc Sơn"},
-  {sbd:"350885",name:"Đoàn Trần Năng Nhật",dob:"06/11/2011",lop:"9B",phone:"0916505150",phong:30,truong:"Bắc Sơn"},
-  {sbd:"350904",name:"Nguyễn Yến Nhi",dob:"01/08/2011",lop:"9A",phone:"0916505150",phong:31,truong:"Bắc Sơn"},
-  {sbd:"350935",name:"Hoàng Hải Phong",dob:"02/09/2011",lop:"9A",phone:"0916505150",phong:32,truong:"Bắc Sơn"},
-  {sbd:"351022",name:"Nguyễn Như Quỳnh",dob:"20/07/2011",lop:"9B",phone:"0916505150",phong:35,truong:"Bắc Sơn"},
-  {sbd:"351028",name:"Nguyễn Bảo Sơn",dob:"11/06/2011",lop:"9A",phone:"0916505150",phong:35,truong:"Bắc Sơn"},
-  {sbd:"351033",name:"Nguyễn Thái Sơn",dob:"06/08/2011",lop:"9B",phone:"0916505150",phong:35,truong:"Bắc Sơn"},
-  {sbd:"351058",name:"Đỗ Thanh Thanh",dob:"05/09/2011",lop:"9A",phone:"0916505150",phong:36,truong:"Bắc Sơn"},
-  {sbd:"351063",name:"Nguyễn Thiện Thành",dob:"03/04/2011",lop:"9A",phone:"0916505150",phong:36,truong:"Bắc Sơn"},
-  {sbd:"351078",name:"Phạm Thị Thanh Thảo",dob:"24/10/2011",lop:"9A",phone:"0916505150",phong:36,truong:"Bắc Sơn"},
-  {sbd:"351107",name:"Lê Minh Thuý",dob:"09/04/2011",lop:"9A",phone:"0916505150",phong:37,truong:"Bắc Sơn"},
-  {sbd:"351111",name:"Nguyễn Bách Thủy",dob:"28/01/2011",lop:"9B",phone:"0916505150",phong:38,truong:"Bắc Sơn"},
-  {sbd:"351134",name:"Mai Thị Minh Thư",dob:"05/02/2011",lop:"9A",phone:"0916505150",phong:38,truong:"Bắc Sơn"},
-  {sbd:"351141",name:"Trần Ngọc Bảo Thy",dob:"13/10/2011",lop:"9A",phone:"0916505150",phong:39,truong:"Bắc Sơn"},
-  {sbd:"351156",name:"Đinh Huyền Trang",dob:"15/03/2011",lop:"9B",phone:"0916505150",phong:39,truong:"Bắc Sơn"},
-  {sbd:"351183",name:"Phạm Thị Bảo Trâm",dob:"06/03/2011",lop:"9A",phone:"0916505150",phong:40,truong:"Bắc Sơn"},
-  {sbd:"351188",name:"Nguyễn Bảo Trọng",dob:"08/04/2011",lop:"9A",phone:"0916505150",phong:40,truong:"Bắc Sơn"},
-  {sbd:"351189",name:"Bùi Đức Trọng",dob:"06/11/2011",lop:"9A",phone:"0916505150",phong:40,truong:"Bắc Sơn"},
-  {sbd:"351195",name:"Đào Phạm Thanh Trúc",dob:"19/05/2011",lop:"9B",phone:"0916505150",phong:40,truong:"Bắc Sơn"},
-  {sbd:"351203",name:"Nguyễn Thị Thanh Trúc",dob:"17/08/2011",lop:"9B",phone:"0916505150",phong:41,truong:"Bắc Sơn"},
-  {sbd:"351259",name:"Phạm Cao Uy",dob:"16/05/2011",lop:"9B",phone:"0916505150",phong:42,truong:"Bắc Sơn"},
-  {sbd:"351260",name:"Phạm Quốc Uy",dob:"27/01/2011",lop:"9A",phone:"0916505150",phong:42,truong:"Bắc Sơn"},
-  {sbd:"351268",name:"Hoàng Hải Vân",dob:"16/11/2011",lop:"9B",phone:"0916505150",phong:43,truong:"Bắc Sơn"},
-  {sbd:"351277",name:"Vũ Văn Việt",dob:"24/08/2011",lop:"9A",phone:"0916505150",phong:43,truong:"Bắc Sơn"},
-  {sbd:"351285",name:"Phạm Nhữ Long Vũ",dob:"18/12/2011",lop:"9B",phone:"0916505150",phong:43,truong:"Bắc Sơn"},
-  {sbd:"351315",name:"Nguyễn Trần Hoàng Xuân",dob:"11/03/2011",lop:"9A",phone:"0916505150",phong:44,truong:"Bắc Sơn"},
-  {sbd:"351340",name:"Nguyễn Hoàng Anh",dob:"09/10/2012",lop:"8A",phone:"0982864726",phong:5,truong:"Bắc Sơn"},
-  {sbd:"351354",name:"Nguyễn Khánh Hà",dob:"29/05/2012",lop:"8B",phone:"0982864726",phong:10,truong:"Bắc Sơn"},
+let data = []; // Mảng chứa dữ liệu sẽ được đọc từ Excel
 
-  // --- THCS HOÀNG QUẾ (1 thí sinh) ---
-  {sbd:"350661",name:"Đinh Phương Linh",dob:"18/06/2011",lop:"9D8",phone:"0394785421",phong:23,truong:"Hoàng Quế"},
+// Hàm đọc dữ liệu từ file Excel nằm cùng thư mục
+async function loadExcelData() {
+    try {
+        const response = await fetch('./ThiThuLan1.xlsx');
+        if (!response.ok) throw new Error("File không tồn tại");
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array', raw: false });
+        
+        // Lấy sheet đầu tiên
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Chuyển đổi thành mảng 2 chiều
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+        
+        // Lặp từ hàng số 7 (index 6 trong mảng)
+        for (let i = 6; i < rows.length; i++) {
+            const row = rows[i];
+            
+            // Bỏ qua nếu dòng trống hoặc không có Số Báo Danh (Cột B)
+            if (!row || !row[1]) continue;
 
-  // --- THCS MẠO KHÊ 2 (1 thí sinh) ---
-  {sbd:"350383",name:"Khương Đại Hải",dob:"05/12/2011",lop:"9D2",phone:"0904891885",phong:13,truong:"Mạo Khê 2"},
+            // Xử lý các môn đăng ký (Cột G, H, I tương ứng index 6, 7, 8)
+            const dkTToan = (row[6] && row[6].toString().trim().toLowerCase() === 'x') ? 'Toán' : '';
+            const dkTVan = (row[7] && row[7].toString().trim().toLowerCase() === 'x') ? 'Văn' : '';
+            const dkTAnh = (row[8] && row[8].toString().trim().toLowerCase() === 'x') ? 'Tiếng Anh' : '';
+            const monThi = [dkTToan, dkTVan, dkTAnh].filter(Boolean).join(', ');
 
-  // --- THCS MINH THÀNH (3 thí sinh) ---
-  {sbd:"350360",name:"Nguyễn Ngọc Hà",dob:"31/03/2011",lop:"9A1",phone:"",phong:12,truong:"Minh Thành"},
-  {sbd:"350545",name:"Đinh Nguyễn Phú Hưng",dob:"16/01/2011",lop:"9d",phone:"",phong:19,truong:"Minh Thành"},
-  {sbd:"350973",name:"Phạm Khánh Phương",dob:"07/06/2011",lop:"9e",phone:"",phong:33,truong:"Minh Thành"},
+            data.push({
+                sbd: row[1] ? row[1].toString().trim() : '',
+                name: row[2] ? row[2].toString().trim() : '',
+                dob: row[3] ? row[3].toString().trim() : '',
+                lop: row[4] ? row[4].toString().trim() : '',
+                truong: row[5] ? row[5].toString().trim() : '',
+                monThi: monThi,
+                phong: row[9] ? parseInt(row[9].toString().trim(), 10) : '',
+                diemToan: row[10] !== undefined && row[10] !== '' ? row[10].toString().trim() : '',
+                diemVan: row[11] !== undefined && row[11] !== '' ? row[11].toString().trim() : '',
+                diemAnh: row[12] !== undefined && row[12] !== '' ? row[12].toString().trim() : ''
+            });
+        }
 
-  // --- THCS NAM KHÊ (30 thí sinh) ---
-  {sbd:"350054",name:"Nguyễn Mai Anh",dob:"19/06/2011",lop:"9A1",phone:"0976726985",phong:2,truong:"Nam Khê"},
-  {sbd:"350055",name:"Vũ Mai Anh",dob:"13/03/2011",lop:"9A2",phone:"0359564870",phong:2,truong:"Nam Khê"},
-  {sbd:"350067",name:"Đặng Ngọc Anh",dob:"03/03/2011",lop:"9al",phone:"0984835716",phong:3,truong:"Nam Khê"},
-  {sbd:"350095",name:"Ngô Quang Thế Anh",dob:"03/09/2011",lop:"9A2",phone:"",phong:4,truong:"Nam Khê"},
-  {sbd:"350223",name:"Nguyễn Ngọc Diệp",dob:"18/12/2011",lop:"9A1",phone:"0978018728",phong:8,truong:"Nam Khê"},
-  {sbd:"350341",name:"Đào Hương Giang",dob:"14/09/2011",lop:"9a2",phone:"",phong:12,truong:"Nam Khê"},
-  {sbd:"350345",name:"Trần Hương Giang",dob:"25/09/2011",lop:"9A1",phone:"0984481154",phong:12,truong:"Nam Khê"},
-  {sbd:"350348",name:"Trần Thị Trà Giang",dob:"29/01/2011",lop:"9A1",phone:"0868352901",phong:12,truong:"Nam Khê"},
-  {sbd:"350415",name:"Nguyễn Bảo Hân",dob:"04/08/2011",lop:"9A1",phone:"0977004197",phong:14,truong:"Nam Khê"},
-  {sbd:"350436",name:"Nguyễn Minh Hiếu",dob:"27/09/2011",lop:"9A1",phone:"0363707826",phong:15,truong:"Nam Khê"},
-  {sbd:"350505",name:"Ngô Quang Huy",dob:"21/01/2011",lop:"9A2",phone:"0983108498",phong:17,truong:"Nam Khê"},
-  {sbd:"350599",name:"Nguyễn Việt Khôi",dob:"22/08/2011",lop:"9A1",phone:"0902784666",phong:20,truong:"Nam Khê"},
-  {sbd:"350619",name:"Dương My Lan",dob:"10/01/2011",lop:"9A1",phone:"",phong:21,truong:"Nam Khê"},
-  {sbd:"350637",name:"Lê Hà Linh",dob:"29/01/2011",lop:"9a1",phone:"0987130386",phong:22,truong:"Nam Khê"},
-  {sbd:"350683",name:"Nguyễn Thuỳ Linh",dob:"18/02/2011",lop:"",phone:"0338229113",phong:23,truong:"Nam Khê"},
-  {sbd:"350704",name:"Nguyễn Đồng Ngọc Lương",dob:"22/02/2011",lop:"9A1",phone:"0362833282",phong:24,truong:"Nam Khê"},
-  {sbd:"350744",name:"Nguyễn Hải Minh",dob:"17/05/2011",lop:"9A1",phone:"0909036889",phong:25,truong:"Nam Khê"},
-  {sbd:"350840",name:"Nguyễn Bảo Ngọc",dob:"23/08/2011",lop:"9A1",phone:"0978884669",phong:28,truong:"Nam Khê"},
-  {sbd:"350868",name:"Phạm Vũ Bảo Ngọc",dob:"06/09/2011",lop:"9A1",phone:"0769237867",phong:29,truong:"Nam Khê"},
-  {sbd:"350933",name:"Nguyễn Gia Phong",dob:"20/04/2011",lop:"9A1",phone:"0936105852",phong:32,truong:"Nam Khê"},
-  {sbd:"350970",name:"Vũ Hà Phương",dob:"25/09/2011",lop:"9A1",phone:"0395366561",phong:33,truong:"Nam Khê"},
-  {sbd:"350977",name:"Phạm Mai Phương",dob:"05/07/2011",lop:"8A2",phone:"",phong:33,truong:"Nam Khê"},
-  {sbd:"351064",name:"Nguyễn Tiến Thành",dob:"03/10/2011",lop:"9A1",phone:"08817565634",phong:36,truong:"Nam Khê"},
-  {sbd:"351116",name:"Hà Thu Thủy",dob:"03/12/2011",lop:"9A1",phone:"0966978518",phong:38,truong:"Nam Khê"},
-  {sbd:"351133",name:"Đinh Thị Minh Thư",dob:"05/12/2011",lop:"9A1",phone:"0393544665",phong:38,truong:"Nam Khê"},
-  {sbd:"351279",name:"Nguyễn Ngọc Tường Vinh",dob:"19/11/2011",lop:"9A1",phone:"0386051888",phong:43,truong:"Nam Khê"},
-  {sbd:"351310",name:"Nguyễn Vũ Hà Vy",dob:"10/08/2011",lop:"9A2",phone:"0365831166",phong:44,truong:"Nam Khê"},
-  {sbd:"351334",name:"Bùi Đức Anh",dob:"25/09/2012",lop:"8A3",phone:"0982864726",phong:3,truong:"Nam Khê"},
-  {sbd:"351338",name:"Đỗ Tuấn Mạnh",dob:"09/09/2012",lop:"8A1",phone:"0982864726",phong:5,truong:"Nam Khê"},
-  {sbd:"351428",name:"Lê Trung Dũng",dob:"23/11/2013",lop:"7A1",phone:"0982864726",phong:35,truong:"Nam Khê"}
-];
+        // Kích hoạt ô tìm kiếm
+        document.getElementById('q').disabled = false;
+        
+        // Khởi tạo giao diện
+        initDropdown();
+        search();
 
-// Hàm logic tính toán địa điểm thi
+    } catch (error) {
+        console.error(error);
+        document.getElementById('results').innerHTML = `
+            <div class="empty">
+                <div class="icon">⚠️</div>
+                <p>Không thể đọc dữ liệu file ThiThuLan1.xlsx</p>
+                <small>Hãy chắc chắn file có tồn tại và bạn đang chạy Web bằng Web Server (VD: Live Server).</small>
+            </div>`;
+    }
+}
+
+// Khởi tạo danh sách trường
+function initDropdown() {
+    const selTruong = document.getElementById('truong');
+    selTruong.innerHTML = ''; 
+
+    const totalStudents = data.length;
+    const formattedTotalCount = totalStudents < 10 ? `0${totalStudents}` : totalStudents;
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = `-- Tất cả các trường (${formattedTotalCount} thí sinh) --`;
+    selTruong.appendChild(defaultOption);
+
+    const truongSet = [...new Set(data.map(d => d.truong).filter(Boolean))].sort();
+    truongSet.forEach(t => {
+      const count = data.filter(d => d.truong === t).length;
+      const formattedCount = count < 10 ? `0${count}` : count;
+      
+      const o = document.createElement('option');
+      o.value = t; 
+      o.textContent = `${t} (${formattedCount} thí sinh)`;
+      selTruong.appendChild(o);
+    });
+}
+
 function getThongTinPhongThi(room) {
+  if (!room) return "Chưa xếp phòng";
   let className = "";
   let building = "";
   let floor = "";
@@ -361,31 +353,6 @@ function removeDiacritics(s) {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
 }
 
-// KHỞI TẠO DANH SÁCH TRƯỜNG VÀ ĐẾM SỐ HỌC SINH 
-const selTruong = document.getElementById('truong');
-selTruong.innerHTML = ''; 
-
-// --- Tính tổng thí sinh tất cả các trường ---
-const totalStudents = data.length;
-const formattedTotalCount = totalStudents < 10 ? `0${totalStudents}` : totalStudents;
-
-const defaultOption = document.createElement('option');
-defaultOption.value = "";
-defaultOption.textContent = `-- Tất cả các trường (${formattedTotalCount} thí sinh) --`;
-selTruong.appendChild(defaultOption);
-
-// --- Tính thí sinh từng trường ---
-const truongSet = [...new Set(data.map(d => d.truong).filter(Boolean))].sort();
-truongSet.forEach(t => {
-  const count = data.filter(d => d.truong === t).length;
-  const formattedCount = count < 10 ? `0${count}` : count;
-  
-  const o = document.createElement('option');
-  o.value = t; 
-  o.textContent = `${t} (${formattedCount} thí sinh)`;
-  selTruong.appendChild(o);
-});
-
 function search() {
   const raw = document.getElementById('q').value.trim();
   const truong = document.getElementById('truong').value;
@@ -427,14 +394,21 @@ function render(results, hasFilter) {
         <div><div class="field-label">Số báo danh</div><div class="field-val sbd">${d.sbd}</div></div>
         <div><div class="field-label">Ngày sinh</div><div class="field-val">${d.dob}</div></div>
         <div><div class="field-label">Lớp</div><div class="field-val">${d.lop || '—'}</div></div>
-        <div><div class="field-label">Số điện thoại</div><div class="field-val">${d.phone || '—'}</div></div>
+        <div><div class="field-label">Môn đăng ký</div><div class="field-val">${d.monThi || '—'}</div></div>
         <div class="full-width"><div class="field-label">Trường học</div><div class="field-val school">${d.truong}</div></div>
+      </div>
+      <div class="scores-grid">
+        <div><div class="field-label">Điểm Toán</div><div class="field-val score">${d.diemToan !== '' ? d.diemToan : '—'}</div></div>
+        <div><div class="field-label">Điểm Văn</div><div class="field-val score">${d.diemVan !== '' ? d.diemVan : '—'}</div></div>
+        <div><div class="field-label">Điểm T.Anh</div><div class="field-val score">${d.diemAnh !== '' ? d.diemAnh : '—'}</div></div>
       </div>
     </div>
   `).join('');
 }
 
-search();
+// Bắt đầu tải dữ liệu Excel khi tải xong trang
+document.addEventListener("DOMContentLoaded", loadExcelData);
+
 </script>
 </body>
 </html>
