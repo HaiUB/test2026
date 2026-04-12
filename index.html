@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hệ Thống tra Cứu Phòng Thi, Điểm Thi - THPT Uông Bí 2026</title>
+<title>Hệ Thống tra Cứu Phòng Thi - THPT Uông Bí 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,44 +26,44 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 0 0 60px;
+    padding: 0 0 40px; /* Giảm khoảng trống dưới cùng */
   }
 
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 24px 20px 20px;
+    padding: 12px 20px 12px; /* Đã giảm khoảng trống trên/dưới header */
     text-align: center;
   }
 
   header .logo {
-    width: 80px;
-    height: 80px;
+    width: 60px; /* Thu nhỏ logo một chút cho gọn */
+    height: 60px;
     object-fit: contain;
     border-radius: 50%;
-    margin-bottom: 12px;
+    margin-bottom: 8px; /* Giảm khoảng cách dưới logo */
   }
 
-  header .school { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-  header h1 { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.3; }
-  header .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  header .school { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  header h1 { font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.3; } /* Thu nhỏ font chữ tiêu đề 1 xíu */
+  header .meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px 0; }
+  .container { max-width: 680px; margin: 0 auto; padding: 16px 16px 0; } /* Giảm khoảng trống trên container */
 
   .search-box {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 16px; /* Giảm padding box tìm kiếm */
+    margin-bottom: 16px; /* Giảm khoảng cách từ box tìm kiếm xuống kính lúp */
   }
 
   .search-box label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
 
   .search-box input, .search-box select {
     width: 100%;
-    padding: 11px 14px;
+    padding: 10px 14px;
     font-size: 15px;
     font-family: inherit;
     border: 1px solid var(--border);
@@ -72,13 +72,13 @@
     color: var(--text);
     outline: none;
     transition: border-color 0.15s;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
   .search-box input:last-child, .search-box select:last-child { margin-bottom: 0; }
   .search-box input:focus, .search-box select:focus { border-color: var(--accent); background: #fff; }
   .search-box input::placeholder { color: #bbb; }
 
-  .hint { font-size: 12px; color: var(--muted); margin-top: -6px; margin-bottom: 16px; line-height: 1.6; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: -4px; margin-bottom: 12px; line-height: 1.6; }
   .hint span { background: #ece9e0; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
 
   .count { font-size: 13px; color: var(--muted); margin-bottom: 12px; padding-left: 2px; }
@@ -147,18 +147,18 @@
 
   .empty {
     text-align: center;
-    padding: 48px 20px;
+    padding: 24px 20px; /* Đã giảm khoảng trống của khu vực kính lúp (từ 48px xuống 24px) */
     color: var(--muted);
   }
-  .empty .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty .icon { font-size: 36px; margin-bottom: 8px; } /* Giảm khoảng cách dưới icon */
   .empty p { font-size: 15px; }
-  .empty small { font-size: 13px; display: block; margin-top: 6px; color: #a1a1a1; }
+  .empty small { font-size: 13px; display: block; margin-top: 4px; color: #a1a1a1; }
 
   footer {
     text-align: center;
     font-size: 13px;
     color: var(--muted);
-    margin-top: 40px;
+    margin-top: 30px;
     padding: 0 16px;
   }
   
@@ -184,7 +184,7 @@
 <header>
   <img src="Logo_UongBi.png" alt="Logo THPT Uông Bí" class="logo" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
   <div class="school">Trường THPT Uông Bí</div>
-  <h1>Hệ Thống Tra Cứu Phòng Thi, Điểm Thi Thử Vào Lớp 10 (Lần 1)</h1>
+  <h1>Hệ Thống Tra Cứu Phòng Thi Thử Vào Lớp 10</h1>
   <div class="meta">Ngày thi: 11 – 12 / 4 / 2026</div>
 </header>
 
@@ -1648,21 +1648,19 @@ const rawData = [
 ["351432", "Nguyễn Hà Linh ", "04/09/2012", "8A5 ", "Trần Quốc Toản", "-", "-", "x", "-", "36", "-", "-", "-"],
 ["351433", "Hoàng Phương Linh", "20/04/2012", "", "Nguyễn Trãi", "-", "-", "x", "-", "36", "-", "-", "-"],
 ["351434", "Vũ Hà Phương", "26/08/2012", "8A6", "Nguyễn Trãi", "-", "-", "x", "-", "37", "-", "-", "-"],
-["351435", "Vũ Nguyễn Thanh Thảo ", "00/01/1900", "8A10", "Trần Quốc Toản", "-", "-", "x", "-", "37", "-", "-", "-"],
+["351435", "Vũ Nguyễn Thanh Thảo ", "", "8A10", "Trần Quốc Toản", "-", "-", "x", "-", "37", "-", "-", "-"],
 ["351436", "Đỗ Anh Tuấn", "05/09/2012", "8A2", "Trưng Vương", "-", "-", "x", "-", "37", "-", "-", "-"],
 ["351437", "Đào Diệu Châu", "26/02/2011", "9A1", "Thực hành sư phạm", "x", "x", "x", "-", "32", "-", "-", "-"],
-["351438", "Hoàng Dương Mai Anh", "00/01/1900", "", "-", "x", "x", "x", "-", "44", "-", "-", "-"],
+["351438", "Hoàng Dương Mai Anh", "", "", "-", "x", "x", "x", "-", "44", "-", "-", "-"],
 ["351440", "Nguyễn Quang Huy", "20/06/2013", "7A6", "-", "-", "x", "-", "-", "43", "-", "-", "-"],
 ["351439", "Lê Tiến Đạt", "12/09/2011", "9A5", "-", "x", "x", "x", "-", "42", "-", "-", "-"],
-  
-  // Bạn có thể thêm 350756 và 350757 vào đây để test. VD:
-  // ["350756", "Lê Nhật Minh", "01/01/2011", "9A1", "Nguyễn Trãi", "x", "x", "x", "-", "15", "-", "-", "-"],
-  // ["350757", "Lê Nhật  Minh ", "02/02/2011", "9A2", "Nguyễn Trãi", "x", "x", "x", "-", "16", "-", "-", "-"],
+
+
+  // Thêm dữ liệu thí sinh mới bên dưới dòng này...
 ];
 
 
 // --- HỆ THỐNG TỰ ĐỘNG XỬ LÝ VÀ CHUẨN HÓA DỮ LIỆU ---
-// Hàm dọn dẹp chuỗi (loại bỏ khoảng trắng thừa, căn lề)
 const cleanStr = (val) => val !== undefined && val !== null ? String(val).trim().replace(/\s+/g, ' ') : '';
 
 const data = rawData.map(row => {
@@ -1673,7 +1671,7 @@ const data = rawData.map(row => {
     
     return {
         sbd: cleanStr(row[0]),
-        name: cleanStr(row[1]), // Tự động xóa sạch dấu cách thừa ở tên
+        name: cleanStr(row[1]), 
         dob: cleanStr(row[2]),
         lop: cleanStr(row[3]),
         truong: cleanStr(row[4]),
@@ -1765,8 +1763,7 @@ function search() {
   const raw = document.getElementById('q').value.trim();
   const truong = document.getElementById('truong').value;
   
-  // TẠO CƠ CHẾ TÌM KIẾM "XUYÊN KHOẢNG TRẮNG"
-  // (Lọc bỏ toàn bộ dấu cách ra khỏi từ khóa tìm kiếm để so sánh tuyệt đối)
+  // TÌM KIẾM "XUYÊN KHOẢNG TRẮNG"
   const qNorm = removeDiacritics(raw).replace(/\s+/g, ''); 
   const qDob = normDob(raw);
 
@@ -1776,7 +1773,6 @@ function search() {
   
   if (raw) {
     results = results.filter(d => {
-      // Xóa toàn bộ dấu cách trong tên & lớp của data để mang đi so khớp
       const nameNorm = removeDiacritics(d.name).replace(/\s+/g, '');
       const lopNorm = removeDiacritics(d.lop).replace(/\s+/g, '');
 
