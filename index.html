@@ -152,8 +152,23 @@
     color: var(--muted);
   }
   .empty .icon { font-size: 36px; margin-bottom: 12px; }
-  .empty p { font-size: 15px; }
-  .empty small { font-size: 13px; display: block; margin-top: 6px; }
+  .empty p { font-size: 15px; line-height: 1.5; margin-bottom: 12px;}
+  .empty small { font-size: 13px; display: block; margin-top: 6px; color: #a1a1a1; }
+
+  .btn-upload {
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s;
+    border: none;
+    outline: none;
+  }
+  .btn-upload:hover { background: #154c91; }
 
   footer {
     text-align: center;
@@ -206,7 +221,7 @@
   <div id="results">
       <div class="empty">
           <div class="icon">⏳</div>
-          <p>Đang đọc dữ liệu từ file Excel...</p>
+          <p>Đang tự động đọc dữ liệu từ file Excel...</p>
       </div>
   </div>
 </div>
@@ -216,32 +231,45 @@
 </footer>
 
 <script>
-let data = []; // Mảng chứa dữ liệu sẽ được đọc từ Excel
+let data = []; // Xóa trắng dữ liệu cũ. Toàn bộ dữ liệu sẽ được đẩy từ file Excel.
 
-// Hàm đọc dữ liệu từ file Excel nằm cùng thư mục
+// Tự động đọc file từ server (Sử dụng timestamp để ép GitHub không lưu Cache cũ)
 async function loadExcelData() {
     try {
-        const response = await fetch('./ThiThuLan1.xlsx');
-        if (!response.ok) throw new Error("File không tồn tại");
+        const fileUrl = './ThiThuLan1.xlsx?t=' + new Date().getTime();
+        const response = await fetch(fileUrl);
+        
+        if (!response.ok) throw new Error("Không tìm thấy file trên server");
         
         const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array', raw: false });
+        processExcelData(arrayBuffer);
+
+    } catch (error) {
+        console.warn("Lỗi tải tự động trên máy chủ. Kích hoạt giao diện tải file thủ công:", error);
+        showManualUploadUI();
+    }
+}
+
+// Xử lý Buffer dữ liệu Excel
+function processExcelData(dataBuffer) {
+    try {
+        const workbook = XLSX.read(dataBuffer, { type: 'array', raw: false });
         
-        // Lấy sheet đầu tiên
+        // Luôn đọc Sheet đầu tiên (DS Phòng thi-Phách)
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         
-        // Chuyển đổi thành mảng 2 chiều
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+        // Chuyển Excel thành mảng 2 chiều
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+        data = []; // Reset dữ liệu
         
-        // Lặp từ hàng số 7 (index 6 trong mảng)
+        // Bắt đầu quét từ dòng 7 trong Excel (index = 6 trong mảng)
         for (let i = 6; i < rows.length; i++) {
             const row = rows[i];
             
-            // Bỏ qua nếu dòng trống hoặc không có Số Báo Danh (Cột B)
-            if (!row || !row[1]) continue;
+            // Bỏ qua nếu dòng trống hoặc không có Số Báo Danh ở cột B (index 1)
+            if (!row || !row[1] || row[1].toString().trim() === "") continue;
 
-            // Xử lý các môn đăng ký (Cột G, H, I tương ứng index 6, 7, 8)
             const dkTToan = (row[6] && row[6].toString().trim().toLowerCase() === 'x') ? 'Toán' : '';
             const dkTVan = (row[7] && row[7].toString().trim().toLowerCase() === 'x') ? 'Văn' : '';
             const dkTAnh = (row[8] && row[8].toString().trim().toLowerCase() === 'x') ? 'Tiếng Anh' : '';
@@ -261,25 +289,44 @@ async function loadExcelData() {
             });
         }
 
-        // Kích hoạt ô tìm kiếm
+        // Mở khóa thanh tìm kiếm sau khi đọc xong dữ liệu
         document.getElementById('q').disabled = false;
         
-        // Khởi tạo giao diện
         initDropdown();
         search();
 
     } catch (error) {
-        console.error(error);
-        document.getElementById('results').innerHTML = `
-            <div class="empty">
-                <div class="icon">⚠️</div>
-                <p>Không thể đọc dữ liệu file ThiThuLan1.xlsx</p>
-                <small>Hãy chắc chắn file có tồn tại và bạn đang chạy Web bằng Web Server (VD: Live Server).</small>
-            </div>`;
+        console.error("Lỗi khi giải mã file Excel:", error);
+        alert("Có lỗi xảy ra trong quá trình đọc nội dung file Excel. Vui lòng kiểm tra lại cấu trúc file!");
     }
 }
 
-// Khởi tạo danh sách trường
+// Cứu cánh: Nếu GitHub lỗi không tìm thấy file, hiện nút để người dùng tự chọn file trên máy
+function showManualUploadUI() {
+    document.getElementById('results').innerHTML = `
+        <div class="empty">
+            <div class="icon">⚠️</div>
+            <p>Hệ thống không thể tự động đọc file <b>ThiThuLan1.xlsx</b> trên máy chủ GitHub.</p>
+            <small>Có thể do sai tên file (chú ý chữ hoa/thường) hoặc đường dẫn. Đừng lo, hãy chọn trực tiếp file Excel từ máy tính của bạn để tiếp tục:</small>
+            <br><br>
+            <label for="manualFile" class="btn-upload">Tải lên file Excel ngay</label>
+            <input type="file" id="manualFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleManualUpload(event)">
+        </div>
+    `;
+    document.getElementById('truong').innerHTML = '<option value="">-- Cần tải dữ liệu --</option>';
+}
+
+function handleManualUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        processExcelData(e.target.result);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
 function initDropdown() {
     const selTruong = document.getElementById('truong');
     selTruong.innerHTML = ''; 
@@ -305,7 +352,7 @@ function initDropdown() {
 }
 
 function getThongTinPhongThi(room) {
-  if (!room) return "Chưa xếp phòng";
+  if (!room) return "Chưa xếp phòng thi";
   let className = "";
   let building = "";
   let floor = "";
@@ -344,16 +391,20 @@ function getThongTinPhongThi(room) {
 }
 
 function normDob(s) {
+  if (!s) return "";
   const parts = s.split('/');
   if (parts.length !== 3) return s;
   return parts[0].padStart(2,'0') + '/' + parts[1].padStart(2,'0') + '/' + parts[2];
 }
 
 function removeDiacritics(s) {
+  if (!s) return "";
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
 }
 
 function search() {
+  if (data.length === 0) return;
+
   const raw = document.getElementById('q').value.trim();
   const truong = document.getElementById('truong').value;
   const qNorm = removeDiacritics(raw);
@@ -406,7 +457,7 @@ function render(results, hasFilter) {
   `).join('');
 }
 
-// Bắt đầu tải dữ liệu Excel khi tải xong trang
+// Kích hoạt việc gọi file Excel tự động khi load trang web
 document.addEventListener("DOMContentLoaded", loadExcelData);
 
 </script>
