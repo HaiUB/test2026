@@ -3,425 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hệ Thống tra Cứu Phòng Thi - THPT Uông Bí 2026</title>
+<title>Tra Cứu Phòng Thi – THCS Trưng Vương 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --border: #e2e0d8;
-    --text: #1a1917;
-    --muted: #7a7870;
-    --accent: #1a5fb4;
-    --accent-bg: #e8f0fb;
-    --accent-text: #1a4a8a;
-    --radius: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
+    --bg: #f5f4f0; --surface: #ffffff; --border: #e2e0d8;
+    --text: #1a1917; --muted: #7a7870;
+    --accent: #1a5fb4; --accent-bg: #e8f0fb; --accent-text: #1a4a8a;
+    --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.05);
   }
-
-  body {
-    font-family: 'Be Vietnam Pro', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0 0 60px;
-  }
-
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 24px 20px 20px;
-    text-align: center;
-  }
-
-  header .logo {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 50%;
-    margin-bottom: 12px;
-  }
-
+  body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 24px 20px 20px; text-align: center; }
   header .school { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   header h1 { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.3; }
   header .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
-
   .container { max-width: 680px; margin: 0 auto; padding: 24px 16px 0; }
-
-  .search-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
+  .search-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
   .search-box label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-
-  .search-box input, .search-box select {
-    width: 100%;
-    padding: 11px 14px;
-    font-size: 15px;
-    font-family: inherit;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    margin-bottom: 16px;
-  }
+  .search-box input, .search-box select { width: 100%; padding: 11px 14px; font-size: 15px; font-family: inherit; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.15s; margin-bottom: 12px; }
   .search-box input:last-child, .search-box select:last-child { margin-bottom: 0; }
   .search-box input:focus, .search-box select:focus { border-color: var(--accent); background: #fff; }
   .search-box input::placeholder { color: #bbb; }
-
-  .hint { font-size: 12px; color: var(--muted); margin-top: -6px; margin-bottom: 16px; line-height: 1.6; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
   .hint span { background: #ece9e0; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
-
   .count { font-size: 13px; color: var(--muted); margin-bottom: 12px; padding-left: 2px; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 16px 18px;
-    margin-bottom: 10px;
-    transition: box-shadow 0.15s;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 10px; transition: box-shadow 0.15s; }
   .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 6px 20px rgba(0,0,0,0.07); }
-
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
-  
-  .card-name { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  
-  .stt {
-    background: #ece9e0;
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-    letter-spacing: 0.02em;
-  }
-
-  .badge {
-    background: var(--accent-bg);
-    color: var(--accent-text);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.02em;
-    text-align: right;
-  }
-
-  .card-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  .scores-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px 16px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--border);
-  }
-
-  .full-width { grid-column: 1 / -1; }
-
+  .card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .badge { background: var(--accent-bg); color: var(--accent-text); font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
   .field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
   .field-val { font-size: 14px; color: var(--text); }
   .field-val.sbd { color: var(--accent); font-weight: 600; }
-  .field-val.school { color: red; font-weight: 600; }
-  .field-val.score { color: #d946ef; font-weight: 600; }
-
-  .empty {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--muted);
-  }
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
   .empty .icon { font-size: 36px; margin-bottom: 12px; }
-  .empty p { font-size: 15px; line-height: 1.5; margin-bottom: 12px;}
-  .empty small { font-size: 13px; display: block; margin-top: 6px; color: #a1a1a1; }
-
-  .btn-upload {
-    background: var(--accent);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-block;
-    font-weight: 600;
-    font-size: 14px;
-    transition: 0.2s;
-    border: none;
-    outline: none;
-  }
-  .btn-upload:hover { background: #154c91; }
-
-  footer {
-    text-align: center;
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 40px;
-    padding: 0 16px;
-  }
-  
-  footer a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  
-  footer a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 480px) {
-    header h1 { font-size: 18px; }
-    .card-grid { grid-template-columns: 1fr; }
-    .badge { text-align: left; }
-  }
+  .empty p { font-size: 15px; }
+  .empty small { font-size: 13px; display: block; margin-top: 6px; }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+  .error { background: #fff0f0; border: 1px solid #fcc; border-radius: var(--radius); padding: 16px; color: #c00; font-size: 14px; margin-bottom: 16px; }
+  footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 40px; padding: 0 16px; }
+  @media (max-width: 480px) { header h1 { font-size: 18px; } .card-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="Logo_UongBi.png" alt="Logo THPT Uông Bí" class="logo" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
-  <div class="school">Trường THPT Uông Bí</div>
-  <h1>Hệ Thống Tra Cứu Phòng Thi Thử Vào Lớp 10</h1>
-  <div class="meta">Ngày thi: 11 – 12 / 4 / 2026</div>
+  <div class="school">Trường THCS Trưng Vương</div>
+  <h1>Tra Cứu Phòng Thi Thử Vào Lớp 10</h1>
+  <div class="meta" id="header-meta">Đang tải dữ liệu...</div>
 </header>
 
 <div class="container">
+  <div id="error-box" style="display:none" class="error"></div>
   <div class="search-box">
-    <label>Lựa chọn trường</label>
-    <select id="truong" onchange="search()">
-        <option value="">Đang tải dữ liệu...</option>
-    </select>
-
     <label>Tìm kiếm thí sinh</label>
     <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" disabled />
+    <label>Lọc theo lớp</label>
+    <select id="lop" onchange="search()" disabled>
+      <option value="">-- Tất cả các lớp --</option>
+    </select>
     <div class="hint">
       Ngày sinh chấp nhận: <span>5/9/2011</span> hoặc <span>05/09/2011</span> hoặc <span>5/09/2011</span>
     </div>
   </div>
-
-  <div id="results">
-      <div class="empty">
-          <div class="icon">⏳</div>
-          <p>Đang tự động đọc dữ liệu từ file Excel...</p>
-      </div>
-  </div>
+  <div id="results"><div class="loading">Đang tải dữ liệu thí sinh...</div></div>
 </div>
 
-<footer>
-  <p>Hệ thống tra cứu phòng thi - Phát triển bởi <a href="https://www.facebook.com/hai.412" target="_blank">Trần Thanh Hải</a></p>
-</footer>
+<footer><p>Hệ thống tra cứu phòng thi – THCS Trưng Vương</p></footer>
 
 <script>
-let data = []; // Xóa trắng dữ liệu cũ. Toàn bộ dữ liệu sẽ được đẩy từ file Excel.
+let data = [];
 
-// Tự động đọc file từ server (Sử dụng timestamp để ép GitHub không lưu Cache cũ)
-async function loadExcelData() {
-    try {
-        const fileUrl = './ThiThuLan1.xlsx?t=' + new Date().getTime();
-        const response = await fetch(fileUrl);
-        
-        if (!response.ok) throw new Error("Không tìm thấy file trên server");
-        
-        const arrayBuffer = await response.arrayBuffer();
-        processExcelData(arrayBuffer);
-
-    } catch (error) {
-        console.warn("Lỗi tải tự động trên máy chủ. Kích hoạt giao diện tải file thủ công:", error);
-        showManualUploadUI();
-    }
-}
-
-// Xử lý Buffer dữ liệu Excel
-function processExcelData(dataBuffer) {
-    try {
-        const workbook = XLSX.read(dataBuffer, { type: 'array', raw: false });
-        
-        // Luôn đọc Sheet đầu tiên (DS Phòng thi-Phách)
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        // Chuyển Excel thành mảng 2 chiều
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-        data = []; // Reset dữ liệu
-        
-        // Bắt đầu quét từ dòng 7 trong Excel (index = 6 trong mảng)
-        for (let i = 6; i < rows.length; i++) {
-            const row = rows[i];
-            
-            // Bỏ qua nếu dòng trống hoặc không có Số Báo Danh ở cột B (index 1)
-            if (!row || !row[1] || row[1].toString().trim() === "") continue;
-
-            const dkTToan = (row[6] && row[6].toString().trim().toLowerCase() === 'x') ? 'Toán' : '';
-            const dkTVan = (row[7] && row[7].toString().trim().toLowerCase() === 'x') ? 'Văn' : '';
-            const dkTAnh = (row[8] && row[8].toString().trim().toLowerCase() === 'x') ? 'Tiếng Anh' : '';
-            const monThi = [dkTToan, dkTVan, dkTAnh].filter(Boolean).join(', ');
-
-            data.push({
-                sbd: row[1] ? row[1].toString().trim() : '',
-                name: row[2] ? row[2].toString().trim() : '',
-                dob: row[3] ? row[3].toString().trim() : '',
-                lop: row[4] ? row[4].toString().trim() : '',
-                truong: row[5] ? row[5].toString().trim() : '',
-                monThi: monThi,
-                phong: row[9] ? parseInt(row[9].toString().trim(), 10) : '',
-                diemToan: row[10] !== undefined && row[10] !== '' ? row[10].toString().trim() : '',
-                diemVan: row[11] !== undefined && row[11] !== '' ? row[11].toString().trim() : '',
-                diemAnh: row[12] !== undefined && row[12] !== '' ? row[12].toString().trim() : ''
-            });
-        }
-
-        // Mở khóa thanh tìm kiếm sau khi đọc xong dữ liệu
-        document.getElementById('q').disabled = false;
-        
-        initDropdown();
-        search();
-
-    } catch (error) {
-        console.error("Lỗi khi giải mã file Excel:", error);
-        alert("Có lỗi xảy ra trong quá trình đọc nội dung file Excel. Vui lòng kiểm tra lại cấu trúc file!");
-    }
-}
-
-// Cứu cánh: Nếu GitHub lỗi không tìm thấy file, hiện nút để người dùng tự chọn file trên máy
-function showManualUploadUI() {
-    document.getElementById('results').innerHTML = `
-        <div class="empty">
-            <div class="icon">⚠️</div>
-            <p>Hệ thống không thể tự động đọc file <b>ThiThuLan1.xlsx</b> trên máy chủ GitHub.</p>
-            <small>Có thể do sai tên file (chú ý chữ hoa/thường) hoặc đường dẫn. Đừng lo, hãy chọn trực tiếp file Excel từ máy tính của bạn để tiếp tục:</small>
-            <br><br>
-            <label for="manualFile" class="btn-upload">Tải lên file Excel ngay</label>
-            <input type="file" id="manualFile" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleManualUpload(event)">
-        </div>
-    `;
-    document.getElementById('truong').innerHTML = '<option value="">-- Cần tải dữ liệu --</option>';
-}
-
-function handleManualUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        processExcelData(e.target.result);
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function initDropdown() {
-    const selTruong = document.getElementById('truong');
-    selTruong.innerHTML = ''; 
-
-    const totalStudents = data.length;
-    const formattedTotalCount = totalStudents < 10 ? `0${totalStudents}` : totalStudents;
-
-    const defaultOption = document.createElement('option');
-    defaultOption.value = "";
-    defaultOption.textContent = `-- Tất cả các trường (${formattedTotalCount} thí sinh) --`;
-    selTruong.appendChild(defaultOption);
-
-    const truongSet = [...new Set(data.map(d => d.truong).filter(Boolean))].sort();
-    truongSet.forEach(t => {
-      const count = data.filter(d => d.truong === t).length;
-      const formattedCount = count < 10 ? `0${count}` : count;
-      
-      const o = document.createElement('option');
-      o.value = t; 
-      o.textContent = `${t} (${formattedCount} thí sinh)`;
-      selTruong.appendChild(o);
-    });
-}
-
-function getThongTinPhongThi(room) {
-  if (!room) return "Chưa xếp phòng thi";
-  let className = "";
-  let building = "";
-  let floor = "";
-
-  if (room >= 1 && room <= 12) {
-    className = `10A${room}`;
-    building = "Nhà G";
-    floor = room <= 6 ? "Tầng 4" : "Tầng 3";
-  } else if (room >= 13 && room <= 24) {
-    className = `12A${room - 12}`;
-    building = "Nhà G";
-    floor = room <= 18 ? "Tầng 2" : "Tầng 1";
-  } else if (room >= 25 && room <= 34) {
-    className = `11A${room - 24}`;
-    building = "Nhà E";
-    floor = room <= 29 ? "Tầng 3" : "Tầng 2";
-  } else if (room === 35 || room === 36) {
-    className = ""; 
-    building = "Nhà E"; floor = "Tầng 1";
-  } else if (room === 37) {
-    className = "11A11"; building = "Nhà E"; floor = "Tầng 1";
-  } else if (room === 38) {
-    className = "11A12"; building = "Nhà E"; floor = "Tầng 1";
-  } else if (room === 39) {
-    className = ""; building = "Nhà B"; floor = "Tầng 3";
-  } else if ([40, 42, 43].includes(room)) {
-    className = ""; building = "Nhà B"; floor = "Tầng 2";
-  } else if ([41, 44].includes(room)) {
-    className = ""; building = "Nhà B"; floor = "Tầng 1";
-  } else {
-    return `Phòng thi số ${room}`;
+async function loadData() {
+  try {
+    const res = await fetch('data.json');
+    if (!res.ok) throw new Error('Không tìm thấy file data.json');
+    const json = await res.json();
+    data = json.thisinh || json;
+    const meta = json.meta || {};
+    document.getElementById('header-meta').textContent =
+      (meta.ngaythi ? 'Ngày thi: ' + meta.ngaythi : '') +
+      (meta.tongso ? '  |  Tổng số thí sinh: ' + meta.tongso : '  |  Tổng số thí sinh: ' + data.length);
+    initLopFilter();
+    document.getElementById('q').disabled = false;
+    document.getElementById('lop').disabled = false;
+    render([], false);
+  } catch(e) {
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-box').innerHTML =
+      '<strong>Lỗi tải dữ liệu:</strong> ' + e.message +
+      '<br><small>Kiểm tra file data.json có cùng thư mục với index.html không.</small>';
+    document.getElementById('results').innerHTML = '';
   }
+}
 
-  let classDisplay = className !== "" ? ` (${className})` : "";
-  return `Phòng thi số ${room}${classDisplay} - ${building} - ${floor}`;
+function initLopFilter() {
+  const lopSet = [...new Set(data.map(d => d.lop).filter(Boolean))].sort();
+  const sel = document.getElementById('lop');
+  lopSet.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = l; sel.appendChild(o); });
 }
 
 function normDob(s) {
-  if (!s) return "";
   const parts = s.split('/');
   if (parts.length !== 3) return s;
   return parts[0].padStart(2,'0') + '/' + parts[1].padStart(2,'0') + '/' + parts[2];
 }
 
 function removeDiacritics(s) {
-  if (!s) return "";
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+  return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
 }
 
 function search() {
-  if (data.length === 0) return;
-
   const raw = document.getElementById('q').value.trim();
-  const truong = document.getElementById('truong').value;
+  const lop = document.getElementById('lop').value;
   const qNorm = removeDiacritics(raw);
   const qDob = normDob(raw);
-
   let results = data;
-  
-  if (truong) results = results.filter(d => d.truong === truong);
-  
+  if (lop) results = results.filter(d => d.lop === lop);
   if (raw) results = results.filter(d =>
     removeDiacritics(d.name).includes(qNorm) ||
-    d.sbd.includes(raw) ||
+    (d.sbd||'').includes(raw) ||
     d.dob === qDob ||
-    (d.lop && removeDiacritics(d.lop).includes(qNorm))
+    removeDiacritics(d.lop).includes(qNorm)
   );
-  
-  render(results, raw || truong);
+  render(results, raw || lop);
 }
 
 function render(results, hasFilter) {
@@ -434,32 +141,23 @@ function render(results, hasFilter) {
     el.innerHTML = `<div class="empty"><div class="icon">😕</div><p>Không tìm thấy thí sinh phù hợp</p><small>Vui lòng kiểm tra lại thông tin</small></div>`;
     return;
   }
-  
-  el.innerHTML = `<p class="count">Tìm thấy ${results.length} thí sinh</p>` + results.map((d, index) => `
+  el.innerHTML = `<p class="count">Tìm thấy ${results.length} thí sinh</p>` + results.map(d => `
     <div class="card">
       <div class="card-top">
-        <span class="card-name"><span class="stt">STT: ${index + 1}</span> ${d.name}</span>
-        <span class="badge">${getThongTinPhongThi(d.phong)}</span>
+        <span class="card-name">${d.name}</span>
+        <span class="badge">Phòng thi số ${d.phong}</span>
       </div>
       <div class="card-grid">
         <div><div class="field-label">Số báo danh</div><div class="field-val sbd">${d.sbd}</div></div>
         <div><div class="field-label">Ngày sinh</div><div class="field-val">${d.dob}</div></div>
-        <div><div class="field-label">Lớp</div><div class="field-val">${d.lop || '—'}</div></div>
-        <div><div class="field-label">Môn đăng ký</div><div class="field-val">${d.monThi || '—'}</div></div>
-        <div class="full-width"><div class="field-label">Trường học</div><div class="field-val school">${d.truong}</div></div>
-      </div>
-      <div class="scores-grid">
-        <div><div class="field-label">Điểm Toán</div><div class="field-val score">${d.diemToan !== '' ? d.diemToan : '—'}</div></div>
-        <div><div class="field-label">Điểm Văn</div><div class="field-val score">${d.diemVan !== '' ? d.diemVan : '—'}</div></div>
-        <div><div class="field-label">Điểm T.Anh</div><div class="field-val score">${d.diemAnh !== '' ? d.diemAnh : '—'}</div></div>
+        <div><div class="field-label">Lớp</div><div class="field-val">${d.lop||'—'}</div></div>
+        <div><div class="field-label">Số điện thoại</div><div class="field-val">${d.phone||'—'}</div></div>
       </div>
     </div>
   `).join('');
 }
 
-// Kích hoạt việc gọi file Excel tự động khi load trang web
-document.addEventListener("DOMContentLoaded", loadExcelData);
-
+loadData();
 </script>
 </body>
 </html>
