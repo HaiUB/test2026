@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ Chuyển Excel → data.json</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --surface: #fff; --border: #e2e0d8;
+    --text: #1a1917; --muted: #7a7870;
+    --accent: #1a5fb4; --accent-bg: #e8f0fb; --accent-text: #1a4a8a;
+    --green: #2d7a3a; --green-bg: #eaf5ec;
+    --red: #c0392b; --red-bg: #fdf0ee;
+    --radius: 12px;
+  }
+  body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 60px; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px; text-align: center; }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 5px; }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+  .card h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-bg); color: var(--accent-text); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step p { font-size: 14px; line-height: 1.6; }
+  .step code { background: #ece9e0; padding: 1px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+
+  .col-map { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .col-map label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+  .col-map input, .col-map select { width: 100%; padding: 8px 10px; font-size: 14px; font-family: inherit; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; }
+  .col-map input:focus, .col-map select:focus { border-color: var(--accent); }
+
+  .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .meta-row label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+  .meta-row input { width: 100%; padding: 8px 10px; font-size: 14px; font-family: inherit; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; }
+  .meta-row input:focus { border-color: var(--accent); }
+
+  .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.15s; margin-bottom: 14px; }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-bg); }
+  .drop-zone .icon { font-size: 32px; margin-bottom: 8px; }
+  .drop-zone p { font-size: 15px; font-weight: 500; color: var(--text); }
+  .drop-zone small { font-size: 12px; color: var(--muted); }
+  #file-input { display: none; }
+
+  .btn { display: inline-block; padding: 10px 20px; font-size: 14px; font-weight: 600; font-family: inherit; border-radius: 8px; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; padding: 13px; font-size: 15px; }
+  .btn-primary:hover { background: #1a4a8a; }
+  .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+  .btn-green { background: var(--green); color: #fff; width: 100%; padding: 13px; font-size: 15px; }
+  .btn-green:hover { background: #235e2c; }
+
+  .alert { border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 12px; }
+  .alert-green { background: var(--green-bg); color: var(--green); border: 1px solid #b8dfc0; }
+  .alert-red { background: var(--red-bg); color: var(--red); border: 1px solid #f5c6c0; }
+
+  #preview-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #preview-table th { background: var(--bg); padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  #preview-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  #preview-table tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+
+  .tag { display: inline-block; background: var(--accent-bg); color: var(--accent-text); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Công Cụ Chuyển Excel → data.json</h1>
+  <p>Dùng để cập nhật dữ liệu thí sinh mỗi kỳ thi — không cần cài phần mềm</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Hướng dẫn sử dụng</h2>
+    <div class="step"><div class="step-num">1</div><p>Chuẩn bị file Excel với các cột: <code>SBD</code>, <code>Họ tên</code>, <code>Ngày sinh</code>, <code>Lớp</code>, <code>SĐT</code>, <code>Phòng thi</code></p></div>
+    <div class="step"><div class="step-num">2</div><p>Điền thứ tự cột tương ứng vào bảng bên dưới (cột A = 1, cột B = 2, cột C = 3...)</p></div>
+    <div class="step"><div class="step-num">3</div><p>Kéo thả hoặc chọn file Excel → xem trước dữ liệu → tải về <code>data.json</code></p></div>
+    <div class="step"><div class="step-num">4</div><p>Upload file <code>data.json</code> mới lên server, ghi đè file cũ → website tự cập nhật</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Thông tin kỳ thi</h2>
+    <div class="meta-row">
+      <div>
+        <label>Tên trường</label>
+        <input type="text" id="meta-truong" value="THCS Trưng Vương" />
+      </div>
+      <div>
+        <label>Ngày thi</label>
+        <input type="text" id="meta-ngay" value="11 – 12 / 4 / 2026" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cấu hình cột Excel</h2>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">Nhập số thứ tự cột trong file Excel (bắt đầu từ 1). Để trống nếu không có cột đó.</p>
+    <div class="col-map">
+      <div>
+        <label>Cột SBD (Số báo danh) *</label>
+        <input type="number" id="col-sbd" value="1" min="1" />
+      </div>
+      <div>
+        <label>Cột Họ và tên *</label>
+        <input type="number" id="col-name" value="2" min="1" />
+      </div>
+      <div>
+        <label>Cột Ngày sinh *</label>
+        <input type="number" id="col-dob" value="3" min="1" />
+      </div>
+      <div>
+        <label>Cột Lớp</label>
+        <input type="number" id="col-lop" value="4" min="1" />
+      </div>
+      <div>
+        <label>Cột Trường THCS</label>
+        <input type="number" id="col-truong" value="5" min="1" />
+      </div>
+      <div>
+        <label>Cột Số điện thoại</label>
+        <input type="number" id="col-phone" value="9" min="1" />
+      </div>
+      <div>
+        <label>Cột Phòng thi *</label>
+        <input type="number" id="col-phong" value="10" min="1" />
+      </div>
+      <div>
+        <label>Bỏ qua N hàng đầu (tiêu đề)</label>
+        <input type="number" id="skip-rows" value="1" min="0" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Chọn file Excel</h2>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="icon">📂</div>
+      <p>Kéo thả file vào đây hoặc nhấn để chọn</p>
+      <small>Hỗ trợ .xlsx, .xls</small>
+    </div>
+    <input type="file" id="file-input" accept=".xlsx,.xls" />
+    <div id="alert-box"></div>
+    <button class="btn btn-primary" id="btn-convert" disabled onclick="convert()">Chuyển đổi dữ liệu</button>
+  </div>
+
+  <div id="preview-section" style="display:none" class="card">
+    <h2>Xem trước dữ liệu <span class="tag" id="preview-count"></span></h2>
+    <div class="table-wrap" style="margin-bottom:14px;">
+      <table id="preview-table"></table>
+    </div>
+    <button class="btn btn-green" id="btn-download" onclick="download()">Tải về data.json</button>
+  </div>
+
+</div>
+
+<script>
+let workbook = null;
+let jsonOutput = null;
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+    dropZone.querySelector('p').textContent = '✅ ' + file.name;
+    dropZone.style.borderColor = '#2d7a3a';
+    dropZone.style.background = '#eaf5ec';
+    document.getElementById('btn-convert').disabled = false;
+    showAlert('File đã tải thành công: ' + file.name, 'green');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function getCol(id) {
+  const v = parseInt(document.getElementById(id).value);
+  return isNaN(v) || v < 1 ? null : v - 1;
+}
+
+function formatDob(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    const d = val.getDate().toString().padStart(2,'0');
+    const m = (val.getMonth()+1).toString().padStart(2,'0');
+    const y = val.getFullYear();
+    return d + '/' + m + '/' + y;
+  }
+  return String(val).trim();
+}
+
+function convert() {
+  if (!workbook) return;
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, cellDates: true, dateNF: 'dd/mm/yyyy' });
+
+  const skip = parseInt(document.getElementById('skip-rows').value) || 0;
+  const cSbd = getCol('col-sbd');
+  const cName = getCol('col-name');
+  const cDob = getCol('col-dob');
+  const cLop = getCol('col-lop');
+  const cPhone = getCol('col-phone');
+  const cPhong = getCol('col-phong');
+
+  if (cSbd === null || cName === null || cDob === null || cPhong === null) {
+    showAlert('Vui lòng điền đủ cột bắt buộc: SBD, Họ tên, Ngày sinh, Phòng thi', 'red');
+    return;
+  }
+
+  const thisinh = [];
+  for (let i = skip; i < rows.length; i++) {
+    const row = rows[i];
+    const name = (row[cName]||'').toString().trim();
+    const sbd = (row[cSbd]||'').toString().trim();
+    if (!name || !sbd) continue;
+
+    let dob = formatDob(row[cDob]);
+    const phong = parseInt(row[cPhong]) || 0;
+
+    thisinh.push({
+      sbd,
+      name,
+      dob,
+      lop: cLop !== null ? (row[cLop]||'').toString().trim() : '',
+      phone: cPhone !== null ? (row[cPhone]||'').toString().trim() : '',
+      phong,
+    });
+  }
+
+  if (!thisinh.length) {
+    showAlert('Không đọc được dữ liệu. Kiểm tra lại cấu hình cột và số hàng bỏ qua.', 'red');
+    return;
+  }
+
+  jsonOutput = {
+    meta: {
+      truong: document.getElementById('meta-truong').value.trim(),
+      ngaythi: document.getElementById('meta-ngay').value.trim(),
+      tongso: thisinh.length,
+    },
+    thisinh
+  };
+
+  showPreview(thisinh);
+  showAlert('Chuyển đổi thành công! ' + thisinh.length + ' thí sinh.', 'green');
+}
+
+function showPreview(data) {
+  const section = document.getElementById('preview-section');
+  section.style.display = 'block';
+  document.getElementById('preview-count').textContent = data.length + ' thí sinh';
+
+  const preview = data.slice(0, 10);
+  const table = document.getElementById('preview-table');
+  table.innerHTML = `
+    <tr><th>SBD</th><th>Họ và tên</th><th>Ngày sinh</th><th>Lớp</th><th>SĐT</th><th>Phòng</th></tr>
+    ${preview.map(d => `<tr>
+      <td>${d.sbd}</td><td>${d.name}</td><td>${d.dob}</td>
+      <td>${d.lop||'—'}</td><td>${d.phone||'—'}</td><td>${d.phong}</td>
+    </tr>`).join('')}
+    ${data.length > 10 ? `<tr><td colspan="6" style="text-align:center;color:var(--muted);font-style:italic">... và ${data.length - 10} thí sinh khác</td></tr>` : ''}
+  `;
+  section.scrollIntoView({ behavior: 'smooth' });
+}
+
+function download() {
+  if (!jsonOutput) return;
+  const blob = new Blob([JSON.stringify(jsonOutput, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data.json';
+  a.click();
+}
+
+function showAlert(msg, type) {
+  document.getElementById('alert-box').innerHTML =
+    `<div class="alert alert-${type}" style="margin-top:12px">${msg}</div>`;
+}
+</script>
+</body>
+</html>
