@@ -194,7 +194,7 @@
     <select id="truong" onchange="search()"></select>
 
     <label>Tìm kiếm thí sinh</label>
-    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" />
+    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày tháng năm sinh..." oninput="search()" autocomplete="off" />
     <div class="hint">
       Ngày sinh chấp nhận: <span>5/9/2011</span> hoặc <span>05/09/2011</span> hoặc <span>5/09/2011</span>
     </div>
@@ -1789,7 +1789,7 @@ function search() {
 function render(results, hasFilter) {
   const el = document.getElementById('results');
   if (!hasFilter) {
-    el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>Nhập thông tin để tìm kiếm thí sinh</p><small>Họ tên, số báo danh hoặc ngày sinh</small></div>`;
+    el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>Nhập thông tin để tìm kiếm thí sinh</p><small>Họ tên, số báo danh hoặc ngày tháng năm sinh</small></div>`;
     return;
   }
   if (!results.length) {
