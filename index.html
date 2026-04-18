@@ -74,9 +74,35 @@
     transition: border-color 0.15s;
     margin-bottom: 12px;
   }
-  .search-box input:last-child, .search-box select:last-child { margin-bottom: 0; }
+  
+  .search-box select { margin-bottom: 16px; }
   .search-box input:focus, .search-box select:focus { border-color: var(--accent); background: #fff; }
   .search-box input::placeholder { color: #bbb; }
+
+  /* Bố cục cho thanh tìm kiếm và nút bấm */
+  .search-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .search-group input {
+    margin-bottom: 0 !important; /* Xóa margin cũ để căn giữa với nút */
+    flex: 1;
+  }
+  .btn-search {
+    background: var(--accent);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-search:hover { background: #154c91; }
 
   .hint { font-size: 12px; color: var(--muted); margin-top: -4px; margin-bottom: 12px; line-height: 1.6; }
   .hint span { background: #ece9e0; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
@@ -130,7 +156,7 @@
 
   .scores-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Đã chuyển thành 4 cột để chứa Tổng điểm */
+    grid-template-columns: repeat(4, 1fr); 
     gap: 8px 16px;
     margin-top: 12px;
     padding-top: 12px;
@@ -145,7 +171,6 @@
   .field-val.school { color: red; font-weight: 600; }
   .field-val.score { color: #d946ef; font-weight: 600; }
   
-  /* Tạo điểm nhấn cho Tổng điểm */
   .field-label.total { color: #e11d48; }
   .field-val.score.total { color: #e11d48; font-size: 15px; }
 
@@ -179,9 +204,10 @@
   @media (max-width: 480px) {
     header h1 { font-size: 18px; }
     .card-grid { grid-template-columns: 1fr; }
-    /* Trên điện thoại lưới điểm sẽ bẻ thành 2 cột để không bị hẹp */
     .scores-grid { grid-template-columns: 1fr 1fr; }
     .badge { text-align: left; }
+    .search-group { flex-direction: column; }
+    .btn-search { padding: 12px; }
   }
 </style>
 </head>
@@ -190,8 +216,8 @@
 <header>
   <img src="Logo_UongBi.png" alt="Logo THPT Uông Bí" class="logo" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
   <div class="school">Trường THPT Uông Bí</div>
-  <h1>Hệ Thống Tra Cứu Phòng Thi, Điểm Thi Thử Vào Lớp 10</h1>
-  <div class="meta">Ngày thi: 11 – 12 / 4 / 2026 (Update 16 / 4 / 2026)</div>
+  <h1>Hệ Thống Tra Cứu Phòng, Điểm Thi Thử Vào Lớp 10 THPT Uông Bí</h1>
+  <div class="meta">Ngày thi: 11 – 12 / 4 / 2026</div>
 </header>
 
 <div class="container">
@@ -200,7 +226,11 @@
     <select id="truong" onchange="search()"></select>
 
     <label>Tìm kiếm thí sinh</label>
-    <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." oninput="search()" autocomplete="off" />
+    <div class="search-group">
+      <input type="text" id="q" placeholder="Nhập họ tên, số báo danh hoặc ngày sinh..." onkeypress="if(event.key === 'Enter') search()" autocomplete="off" />
+      <button class="btn-search" onclick="search()">Tìm kiếm</button>
+    </div>
+    
     <div class="hint">
       Ngày sinh chấp nhận: <span>5/9/2011</span> hoặc <span>05/09/2011</span> hoặc <span>5/09/2011</span>
     </div>
@@ -221,7 +251,7 @@
 //         [8]Số điện thoại, [9]Phòng thi, [10]Điểm Toán, [11]Điểm Văn, [12]Điểm Anh
 // =========================================================================
 const rawData = [
-  ["350001", "Phạm Bảo An", "11/08/2011", "9A8", "Nguyễn Trãi", "x", "x", "x", "-", "1", "6.5", "6", "3.4"],
+   ["350001", "Phạm Bảo An", "11/08/2011", "9A8", "Nguyễn Trãi", "x", "x", "x", "-", "1", "6.5", "6", "3.4"],
 ["350002", "Phạm Bảo An", "13/08/2011", "9A1", "Trần Quốc Toản", "x", "x", "x", "-", "1", "6.5", "7.75", "7.6"],
 ["350003", "Hà Bình An", "29/09/2011", "9A8", "Nguyễn Trãi", "x", "x", "x", "-", "1", "4", "3.25", "5"],
 ["350004", "Hà Dương An", "03/07/2011", "9A6", "Nguyễn Trãi", "x", "x", "x", "-", "1", "7.5", "7.75", "4.4"],
@@ -1655,22 +1685,20 @@ const rawData = [
 ["351438", "Hoàng Dương Mai Anh", "00/01/1900", "", "", "x", "x", "x", "-", "44", "5.25", "5.75", "4.4"],
 ["351440", "Nguyễn Quang Huy", "20/06/2013", "7A6", "", "", "x", "", "-", "43", "", "4.25", ""],
 ["351439", "Lê Tiến Đạt", "12/09/2011", "9A5", "", "x", "x", "x", "-", "42", "6", "4.75", "6.8"],
-
+  
+  
   // Copy dòng trên và dán xuống dưới để thêm thí sinh mới
 ];
-
 
 // --- HỆ THỐNG TỰ ĐỘNG XỬ LÝ VÀ CHUẨN HÓA DỮ LIỆU ---
 const cleanStr = (val) => val !== undefined && val !== null ? String(val).trim().replace(/\s+/g, ' ') : '';
 
 const data = rawData.map(row => {
-    // Xử lý môn thi đăng ký
     let monThiArr = [];
     if (cleanStr(row[5]).toLowerCase() === 'x') monThiArr.push('Toán');
     if (cleanStr(row[6]).toLowerCase() === 'x') monThiArr.push('Văn');
     if (cleanStr(row[7]).toLowerCase() === 'x') monThiArr.push('Tiếng Anh');
     
-    // Xử lý điểm để tính tổng tự động
     let sToan = cleanStr(row[10]);
     let sVan = cleanStr(row[11]);
     let sAnh = cleanStr(row[12]);
@@ -1684,10 +1712,9 @@ const data = rawData.map(row => {
     let hasAnh = !isNaN(pAnh);
 
     let tongDiem = '-';
-    // Tính tổng nếu có ít nhất 1 đầu điểm
     if (hasToan || hasVan || hasAnh) {
         let sum = (hasToan ? pToan : 0) + (hasVan ? pVan : 0) + (hasAnh ? pAnh : 0);
-        tongDiem = Math.round(sum * 100) / 100; // Làm tròn 2 chữ số thập phân
+        tongDiem = Math.round(sum * 100) / 100;
     }
     
     return {
@@ -1785,7 +1812,6 @@ function search() {
   const raw = document.getElementById('q').value.trim();
   const truong = document.getElementById('truong').value;
   
-  // TÌM KIẾM "XUYÊN KHOẢNG TRẮNG"
   const qNorm = removeDiacritics(raw).replace(/\s+/g, ''); 
   const qDob = normDob(raw);
 
